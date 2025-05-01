@@ -19,7 +19,7 @@ background-image: linear-gradient(315deg, #003153 0%, #1B1B1B 74%);
 
         <!-- Desktop Menu -->
         <ul class="hidden md:flex space-x-6 text-xl font-bold">
-            <li><a href="./" class="nav-link">Home</a></li>
+            <li><a href="./" class="nav-link text-yellow-400">Home</a></li>
             <li><a href="./about.html" class="nav-link">About</a></li>
             <li><a href="./projects.html" class="nav-link">Projects</a></li>
             <li><a href="./skills.html" class="nav-link">Skills</a></li>
@@ -62,6 +62,9 @@ background-image: linear-gradient(315deg, #003153 0%, #1B1B1B 74%);
                 <a href="#contact" class="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 rounded-lg font-bold transition text-[#1B1B1B]">Hire Me</a>
                 <a href="#projects" class="px-6 py-3 border-2 border-yellow-500 hover:bg-yellow-500 rounded-lg font-bold transition">View Projects</a>
             </div>
+            <div class="flex justify-center md:justify-start space-x-4">
+                <a href="/images/Prince's Resume.pdf" target="_blank" class="px-6 py-3 border-2 w-2/3 border-blue-500 hover:bg-blue-500 rounded-lg font-bold transition text-center">View Resume </a>
+            </div>
         </div>
         
         <!-- Right: Profile Image -->
@@ -82,12 +85,12 @@ background-image: linear-gradient(315deg, #003153 0%, #1B1B1B 74%);
         <div class="w-full md:w-2/3 text-center md:text-left space-y-6">
             <h2 class="text-4xl font-bold text-yellow-400">About Me</h2>
             <p class="text-lg font-semibold text-gray-300">
-                Hey there! I'm <span class="text-blue-400 font-bold">Prince Singh</span>, a passionate **Data Scientist** and **Software Developer**.  
+                Hey there! I'm <span class="text-blue-400 font-bold">Prince Singh</span>, a passionate Data Scientist and Software Developer.  
                 I love solving problems, building amazing applications, and creating engaging digital experiences.
             </p>
 
             <p class="text-lg font-semibold text-gray-300">
-                Apart from coding, I also create **memes & videos**, blending humor with creativity.  
+                Apart from coding, I also create memes & videos, blending humor with creativity.  
                 I believe in continuous learning and strive to make a meaningful impact in the tech world. 🚀
             </p>
 
@@ -109,18 +112,18 @@ background-image: linear-gradient(315deg, #003153 0%, #1B1B1B 74%);
     
             <!-- Project 1 -->
             <div class="bg-gray-800 p-6 rounded-2xl shadow-lg hover:scale-105 transition">
-                <img src="./images/Screenshot 2025-03-29 211701.png" alt="Project 2" class="w-full h-40 object-cover rounded-lg mb-4">
-                <h3 class="text-xl font-semibold">Sports Networking Website</h3>
-                <p class="text-gray-400 text-sm mt-2">A hybrid sports networking and scoring app designed for Cricket, Badminton, and more.</p>
-                <a href="https://github.com/vibieprince/Ashoka-Sports-Website" target="_blank" class="mt-4 inline-block text-yellow-400 font-semibold hover:underline">View Project →</a>
+                <img src="./images/Screenshot (9).png" alt="Project 2" class="w-full h-40 object-cover rounded-lg mb-4">
+                <h3 class="text-xl font-semibold">Personal portfolio website</h3>
+                <p class="text-gray-400 text-sm mt-2">A basic yet functinal website to showcase my web development skills via HTML and TailwindCSS.</p>
+                <a href="https://github.com/vibieprince/Portfolio" target="_blank" class="mt-4 inline-block text-yellow-400 font-semibold hover:underline">GitHub Repo →</a>
             </div>
 
             <!-- Project 2 -->
             <div class="bg-gray-800 p-6 rounded-2xl shadow-lg hover:scale-105 transition">
                 <img src="./images/Screenshot 2025-03-30 120024.png" alt="Project 3" class="w-full h-40 object-cover rounded-lg mb-4">
                 <h3 class="text-xl font-semibold">Bill Generator</h3>
-                <p class="text-gray-400 text-sm mt-2">A easy to use Bill Generation Website to help small scale businesses</p>
-                <a href="https://github.com/vibieprince/bill-generator" target="_blank" class="mt-4 inline-block text-yellow-400 font-semibold hover:underline">View Project →</a>
+                <p class="text-gray-400 text-sm mt-2">A easy to use Bill Generation Website to help small scale businesses. Used AI for advanced python libraries to generate bill</p>
+                <a href="https://github.com/vibieprince/bill-generator" target="_blank" class="mt-4 inline-block text-yellow-400 font-semibold hover:underline">GitHub Repo →</a>
             </div>
 
             <!-- Project 3 -->
@@ -128,7 +131,7 @@ background-image: linear-gradient(315deg, #003153 0%, #1B1B1B 74%);
                 <img src="./images/Razor-payment-gateway.webp" alt="Project 4" class="w-full h-40 object-cover rounded-lg mb-4">
                 <h3 class="text-xl font-semibold">Razorpay Clone</h3>
                 <p class="text-gray-400 text-sm mt-2">Demonstation of my web development skills through making of Razorpay clone </p>
-                <a href="https://github.com/vibieprince/Full-Stack-Web-Development/tree/main/TailWind_CSS%2FRazorpay-Clone" target="_blank" class="mt-4 inline-block text-yellow-400 font-semibold hover:underline">View Project →</a>
+                <a href="https://github.com/vibieprince/Full-Stack-Web-Development/tree/main/TailWind_CSS%2FRazorpay-Clone" target="_blank" class="mt-4 inline-block text-yellow-400 font-semibold hover:underline">GitHub Repo →</a>
             </div>
         </div>
     </section>
@@ -348,7 +351,7 @@ background-image: linear-gradient(315deg, #003153 0%, #1B1B1B 74%);
                 }, 600); // Delay navigation to match loading bar animation
             });
         });
-        const roles = ["Software Developer", "Data Scientist", "Meme Creator", "Video Editor"];
+        const roles = ["Software Developer", "Data Scientist", "Video Editor"];
         let roleIndex = 0;
         let charIndex = 0;
         let typingSpeed = 100;
