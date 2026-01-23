@@ -511,15 +511,20 @@
 
     function toggleMenu() {
       menuOpen = !menuOpen;
+      
       if (menuOpen) {
         mobileOverlay.classList.remove("opacity-0", "pointer-events-none");
-        menuIconContainer.innerHTML = '<i data-lucide="x" class="w-6 h-6 text-slate-300"></i>';
+        // Target menuBtn directly to change the icon inside it
+        menuBtn.innerHTML = '<i data-lucide="x" class="w-6 h-6 text-slate-300"></i>';
         document.body.style.overflow = "hidden";
       } else {
         mobileOverlay.classList.add("opacity-0", "pointer-events-none");
-        menuIconContainer.innerHTML = '<i data-lucide="menu" class="w-6 h-6 text-slate-300"></i>';
+        // Swap back to the menu icon
+        menuBtn.innerHTML = '<i data-lucide="menu" class="w-6 h-6 text-slate-300"></i>';
         document.body.style.overflow = "auto";
       }
+      
+      // RE-INITIALIZE icons so Lucide knows to render the new <i> tag
       lucide.createIcons();
     }
 
