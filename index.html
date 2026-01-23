@@ -1,397 +1,558 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prince's Portfolio</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>html{scroll-behavior: smooth;}</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Prince's Portfolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #050505;
+      color: #f8fafc;
+    }
+
+    .glass {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .glow:hover {
+      box-shadow: 0 0 40px rgba(16, 185, 129, 0.15);
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: all 0.8s ease;
+    }
+
+    .reveal.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Active Link Styles */
+    .nav-link.active {
+      color: #34d399;
+      /* emerald-400 */
+      font-weight: 700;
+      position: relative;
+    }
+
+    /* Little dot indicator for active link */
+    .nav-link.active::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 4px;
+      background: #34d399;
+      border-radius: 50%;
+    }
+
+    .mobile-link.active {
+      color: #34d399;
+      transform: scale(1.1);
+    }
+
+    /* Folder Stack Animation */
+    .folder-stack:hover .stack-card-1 {
+      transform: translateY(-10px) scale(1.02);
+    }
+
+    .folder-stack:hover .stack-card-2 {
+      transform: translateY(-20px) translateX(10px) scale(0.98);
+    }
+
+    .folder-stack:hover .stack-card-3 {
+      transform: translateY(-30px) translateX(20px) scale(0.95);
+    }
+  </style>
 </head>
-<body style="background-color: #003153;
-background-image: linear-gradient(315deg, #003153 0%, #1B1B1B 74%);
-" class="text-white opacity-0 transition-opacity duration-200">
 
-    <!-- Navbar -->
-    <nav class="fixed z-50 w-full h-[9vh] backdrop-blur-md bg-black/30 flex items-center justify-between px-6">
-        <div class="flex flex-row text-2xl font-bold">Portfolio
-            <div class="pl-2 text-sm font-bold self-end text-blue-200 ">• Prince Singh</div>
-        </div>
+<body class="antialiased selection:bg-emerald-500/20">
 
-        <!-- Desktop Menu -->
-        <ul class="hidden md:flex space-x-6 text-xl font-bold">
-            <li><a href="./" class="nav-link text-yellow-400">Home</a></li>
-            <li><a href="./about.html" class="nav-link">About</a></li>
-            <li><a href="./projects.html" class="nav-link">Projects</a></li>
-            <li><a href="./skills.html" class="nav-link">Skills</a></li>
-            <li><a href="./contact.html" class="nav-link">Contact</a></li>
-        </ul>
+  <div class="fixed top-[-10%] left-[-10%] w-[40%] h-[40%] bg-emerald-500/10 blur-[140px] rounded-full"></div>
+  <div class="fixed bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-sky-500/10 blur-[140px] rounded-full"></div>
 
-        <!-- Mobile Menu Button -->
-        <button id="menu-btn" class="md:hidden text-3xl">☰</button>
+  <nav class="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl z-50">
+  <div class="glass rounded-xl px-5 py-4 flex items-center justify-between">
 
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="fixed top-[7vh] right-1 w-1/3  bg-black/90 backdrop-blur-lg p-6 rounded-md shadow-lg transform translate-x-[103%] transition-transform duration-300">
-            <button id="close-btn" class="absolute top-2 right-5 text-white text-3xl">&times;</button>
-            <ul class="flex flex-col items-center space-y-5 text-xl font-bold mt-6">
-                <li><a href="./" class="nav-link">Home</a></li>
-                <li><a href="./about.html" class="nav-link">About</a></li>
-                <li><a href="./projects.html" class="nav-link">Projects</a></li>
-                <li><a href="./skills.html" class="nav-link">Skills</a></li>
-                <li><a href="./contact.html" class="nav-link">Contact</a></li>
-            </ul>
-        </div>
-    </nav>
+    <!-- LEFT: Logo -->
+    <a href="index.html"
+       class="text-sm font-bold tracking-widest uppercase">
+      Prince
+    </a>
 
-    <!-- Home Section -->
-    <section id="home" class="h-screen flex flex-col md:flex-row items-center justify-center text-white px-6 md:px-20">
-        
-        <!-- Left: Text Content -->
-        <div class="text-center md:text-left space-y-6">
-            <h1 class="text-4xl md:text-6xl font-bold">
-                Hi, I'm <span class="text-yellow-400">Prince</span> 
-            </h1>
-            
-            <!-- Rolling Animation -->
-            <p class="text-lg md:text-xl text-gray-300">
-                A Passionate <span id="typing-text" class="text-blue-400 font-bold"></span><span class="blinking-cursor">|</span>
-            </p>
-            
+    <!-- CENTER: Socials (visible on ALL screens) -->
+    <div class="flex items-center gap-2">
+      <a href="https://github.com/vibieprince" target="_blank"
+         class="glass glow p-2 rounded-lg">
+        <i data-lucide="github" class="w-4 h-4"></i>
+      </a>
+      <a href="https://linkedin.com/in/vibieprince" target="_blank"
+         class="glass glow p-2 rounded-lg">
+        <i data-lucide="linkedin" class="w-4 h-4"></i>
+      </a>
+    </div>
 
-            <!-- Buttons -->
-            <div class="flex justify-center md:justify-start space-x-4">
-                <a href="#contact" class="px-6 py-3 bg-yellow-500 hover:bg-yellow-600 rounded-lg font-bold transition text-[#1B1B1B]">Hire Me</a>
-                <a href="#projects" class="px-6 py-3 border-2 border-yellow-500 hover:bg-yellow-500 rounded-lg font-bold transition">View Projects</a>
+    <!-- RIGHT: Desktop Nav + CTA + Mobile Menu -->
+    <div class="flex items-center gap-4">
+
+      <!-- Desktop Nav -->
+      <div class="hidden md:flex gap-8 text-[13px] font-medium text-slate-400">
+        <a href="index.html" class="nav-link hover:text-white">Home</a>
+        <a href="about.html" class="nav-link hover:text-white">About</a>
+        <a href="projects.html" class="nav-link hover:text-white">Projects</a>
+        <a href="skills.html" class="nav-link hover:text-white">Skills</a>
+        <a href="resume.html" class="nav-link hover:text-white">Resume</a>
+      </div>
+
+      <!-- Desktop Contact -->
+      <a href="mailto:prince.devds@gmail.com"
+         class="hidden md:block bg-white text-black text-[12px] font-bold px-5 py-2 rounded-lg hover:bg-emerald-400 transition">
+        CONTACT
+      </a>
+
+      <!-- Mobile Hamburger -->
+      <button id="menuBtn" class="md:hidden p-2">
+        <i id="menuIcon" data-lucide="menu" class="w-6 h-6 text-slate-300"></i>
+      </button>
+
+    </div>
+  </div>
+</nav>
+
+
+
+  <div id="mobileOverlay"
+    class="fixed inset-0 z-40 bg-black/95 backdrop-blur-2xl opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center">
+    <div class="flex flex-col gap-10 text-center text-2xl font-semibold">
+      <a href="index.html" class="mobile-link">Home</a>
+      <a href="about.html" class="mobile-link">About</a>
+      <a href="projects.html" class="mobile-link">Projects</a>
+      <a href="skills.html" class="mobile-link">Skills</a>
+      <a href="resume.html" class="mobile-link">Resume</a>
+    </div>
+  </div>
+
+  <main class="relative z-10 max-w-6xl mx-auto px-6">
+
+    <section id="hero" class="flex-col justify-center pt-40">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-12 reveal">
+        <div class="flex justify-center md:justify-start">
+          <div class="relative">
+            <div class="absolute inset-0 bg-emerald-500 blur-2xl opacity-20"></div>
+            <div class="relative w-32 h-32 md:w-48 md:h-48 rounded-full glass p-1">
+              <img src="images/IMG_20250329_145301.jpg" class="rounded-full w-full h-full object-cover" alt="Prince" />
             </div>
-            <div class="flex justify-center md:justify-start space-x-4">
-                <a href="/images/Prince's Resume.pdf" target="_blank" class="px-6 py-3 border-2 w-2/3 border-blue-500 hover:bg-blue-500 rounded-lg font-bold transition text-center">View Resume </a>
-            </div>
+          </div>
         </div>
-        
-        <!-- Right: Profile Image -->
-        <div class="w-3/4 sm:w-1/3 flex justify-center items-center">
-            <img src="./images/IMG_20250329_145301.jpg" alt="Profile Image" class="w-100 sm:w-80 rounded-full mt-10">
+        <div class="flex flex-col items-center md:items-start text-center md:text-left max-w-2xl">
+          <h1 class="text-5xl md:text-7xl font-bold tracking-tight mb-4">Prince <span
+              class="text-emerald-400">Singh</span></h1>
+          <p class="text-slate-400 text-lg mb-10"> I’m a CSE undergraduate specializing in Data Science, currently in my
+            3rd year, building strong foundations in analytics, software development, and problem-solving. I work with
+            tools like Python, SQL, Snowflake, dbt, and Power BI to transform raw data into meaningful insights while
+            developing clean, scalable applications.</p>
         </div>
+      </div>
     </section>
 
-    <!-- About Section -->
-    <section id="about" class="h-screen flex flex-col md:flex-row items-center justify-center px-6 md:px-20 text-white">
-        
-        <!-- Left: Image -->
-        <div class="w-full md:w-1/3 flex justify-center mb-6 md:mb-0">
-            <img src="./images/847.jpg" alt="Profile Image" class="w-40 sm:w-64 sm:h-64  rounded-full shadow-lg transition-transform duration-300 hover:scale-105">
+    <section id="about" class="py-24  reveal">
+
+      <div class="grid md:grid-cols-12 gap-12">
+
+
+
+        <!-- Left label -->
+
+        <div class="md:col-span-4">
+
+          <h2 class="text-xs text-center font-bold tracking-[0.3em] text-emerald-500 uppercase">
+
+            ABOUT ME
+
+          </h2>
+
         </div>
 
-        <!-- Right: About Content -->
-        <div class="w-full md:w-2/3 text-center md:text-left space-y-6">
-            <h2 class="text-4xl font-bold text-yellow-400">About Me</h2>
-            <p class="text-lg font-semibold text-gray-300">
-                Hey there! I'm <span class="text-blue-400 font-bold">Prince Singh</span>, a passionate Data Scientist and Software Developer.  
-                I love solving problems, building amazing applications, and creating engaging digital experiences.
-            </p>
 
-            <p class="text-lg font-semibold text-gray-300">
-                Apart from coding, I also create memes & videos, blending humor with creativity.  
-                I believe in continuous learning and strive to make a meaningful impact in the tech world. 🚀
-            </p>
 
-            <!-- Buttons -->
-            <div class="flex justify-center md:justify-start space-x-4">
-                <a href="#projects" class="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg font-bold transition">View My Work</a>
-                <a href="#contact" class="px-6 py-3 border-2 border-yellow-500 hover:bg-yellow-500 rounded-lg font-bold transition">Contact Me</a>
+        <!-- Right content -->
+
+        <div class="md:col-span-8 space-y-10">
+
+
+
+          <!-- Short intro -->
+
+          <p class="text-xl text-slate-300 leading-relaxed">
+
+            I’m a Computer Science undergraduate specializing in <span class="text-white font-medium">Data
+              Science</span>, currently in my 3rd year, focused on building strong analytical thinking and real-world
+            problem-solving skills through data and software.
+
+          </p>
+
+
+
+          <!-- Timeline -->
+
+          <div class="space-y-6">
+
+
+
+            <!-- Timeline item -->
+
+            <div class="flex gap-6">
+
+              <div class="flex flex-col items-center">
+
+                <span class="w-2.5 h-2.5 bg-emerald-400 rounded-full mt-1"></span>
+
+                <span class="w-px flex-1 bg-white/10"></span>
+
+              </div>
+
+              <div>
+
+                <p class="text-sm text-slate-400">2023 – 2027</p>
+
+                <p class="text-slate-200 font-medium">
+
+                  B.Tech in Computer Science (Data Science)
+
+                </p>
+
+                <p class="text-slate-400 text-sm">
+
+                  G.L. Bajaj Institute of Technology & Management, Greater Noida
+
+                </p>
+
+              </div>
+
             </div>
+
+
+
+            <!-- Timeline item -->
+
+            <div class="flex gap-6">
+
+              <div class="flex flex-col items-center">
+
+                <span class="w-2.5 h-2.5 bg-white/40 rounded-full mt-1"></span>
+
+                <span class="w-px flex-1 bg-white/10"></span>
+
+              </div>
+
+              <div>
+
+                <p class="text-sm text-slate-400">2023</p>
+
+                <p class="text-slate-200 font-medium">
+
+                  Senior Secondary Education
+
+                </p>
+
+                <p class="text-slate-400 text-sm">
+
+                  Ram-Eesh International School, Greater Noida
+
+                </p>
+
+              </div>
+
+            </div>
+
+
+
+            <!-- Timeline item -->
+
+            <div class="flex gap-6">
+
+              <div class="flex flex-col items-center">
+
+                <span class="w-2.5 h-2.5 bg-white/20 rounded-full mt-1"></span>
+
+              </div>
+
+              <div>
+
+                <p class="text-sm text-slate-400">Earlier</p>
+
+                <p class="text-slate-200 font-medium">
+
+                  Secondary Education
+
+                </p>
+
+                <p class="text-slate-400 text-sm">
+
+                  Built early interest in mathematics, logic, and problem solving
+
+                </p>
+
+              </div>
+
+            </div>
+
+
+
+          </div>
+    </section>
+    <section id="projects-preview" class="py-24 reveal">
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-16 gap-4 text-center md:text-left">
+
+        <!-- Title + subtitle -->
+        <div class="mx-auto md:mx-0">
+          <h2 class="text-xs font-bold tracking-[0.3em] text-emerald-500 uppercase">
+            Featured Projects
+          </h2>
+          <p class="text-slate-400 mt-2">
+            A glimpse of my technical work.
+          </p>
         </div>
+
+        <!-- DESKTOP BUTTON -->
+        <a href="projects.html" class="hidden md:inline-flex group items-center gap-2
+            bg-emerald-500/10 text-emerald-400
+            px-6 py-3 rounded-full
+            border border-emerald-500/20
+            hover:bg-emerald-500 hover:text-black
+            transition-all duration-300">
+          <span>View All Projects</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+        </a>
+      </div>
+
+
+      <div class="relative folder-stack max-w-4xl mx-auto min-h-[450px]">
+
+        <div
+          class="stack-card-3 absolute top-0 left-0 w-full h-full glass rounded-2xl opacity-80 border-white/5 transition-all duration-500 origin-bottom"
+          style="transform: translateY(20px) scale(0.92);"></div>
+
+        <div
+          class="stack-card-2 absolute top-0 left-0 w-full h-full glass rounded-2xl opacity-60 border-white/10 transition-all duration-500 origin-bottom"
+          style="transform: translateY(10px) scale(0.96);"></div>
+
+        <div
+          class="stack-card-1 relative z-30 glass glow rounded-2xl p-8 md:p-12 border-white/10 transition-all duration-500 bg-black/40">
+          <div class="grid md:grid-cols-2 gap-8">
+            <div class="space-y-4">
+              <div class="w-12 h-12 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+                <i data-lucide="printer" class="text-emerald-400"></i>
+              </div>
+              <h3 class="text-2xl font-bold">PrintSmart : College Print Order & Pickup system</h3>
+              <p class="text-slate-400 text-sm leading-relaxed">End-to-end print ordering system with real-time tracking
+                and Firebase automation.</p>
+              <div class="flex gap-2">
+                <span class="text-[10px] px-2 py-1 glass rounded text-emerald-300">Firebase</span>
+                <span class="text-[10px] px-2 py-1 glass rounded text-emerald-300">Cloudinary</span>
+                <span class="text-[10px] px-2 py-1 glass rounded text-emerald-300">Html</span>
+                <span class="text-[10px] px-2 py-1 glass rounded text-emerald-300">Tailwind CSS</span>
+                <span class="text-[10px] px-2 py-1 glass rounded text-emerald-300">JavaScript</span>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="w-12 h-12 rounded-lg bg-sky-500/20 flex items-center justify-center">
+                <i data-lucide="bar-chart-3" class="text-sky-400"></i>
+              </div>
+              <h3 class="text-2xl font-bold">Sales Analytics Project using DBT</h3>
+              <p class="text-slate-400 text-sm leading-relaxed">Snowflake + dbt ELT pipeline transforming raw sales data
+                into actionable KPIs.</p>
+              <div class="flex gap-2">
+                <span class="text-[10px] px-2 py-1 glass rounded text-sky-300">Snowflake</span>
+                <span class="text-[10px] px-2 py-1 glass rounded text-sky-300">dbt</span>
+                <span class="text-[10px] px-2 py-1 glass rounded text-sky-300">Power BI</span>
+                <span class="text-[10px] px-2 py-1 glass rounded text-sky-300">SQL</span>
+                <span class="text-[10px] px-2 py-1 glass rounded text-sky-300">DAX</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-12 pt-8 border-t border-white/5 flex items-center justify-center">
+            <p class="text-slate-500 text-sm italic">+ 5 more projects archived in the stack</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MOBILE BUTTON -->
+      <div class="mt-10 flex justify-center md:hidden">
+        <a href="projects.html" class="group inline-flex items-center gap-2
+            bg-emerald-500/10 text-emerald-400
+            px-6 py-3 rounded-full
+            border border-emerald-500/20
+            hover:bg-emerald-500 hover:text-black
+            transition-all duration-300">
+          <span>View All Projects</span>
+          <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+        </a>
+      </div>
 
     </section>
 
-    <!-- Projects Section  -->
-    <section id="projects" class="h-auto px-6 md:px-20 py-16 text-white">
-        <h2 class="text-4xl font-bold text-center mb-10">My Projects</h2>
-    
-        <!-- Project Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-    
-            <!-- Project 1 -->
-            <div class="bg-gray-800 p-6 rounded-2xl shadow-lg hover:scale-105 transition">
-                <img src="./images/Screenshot (9).png" alt="Project 2" class="w-full h-40 object-cover rounded-lg mb-4">
-                <h3 class="text-xl font-semibold">Personal portfolio website</h3>
-                <p class="text-gray-400 text-sm mt-2">A basic yet functinal website to showcase my web development skills via HTML and TailwindCSS.</p>
-                <a href="https://github.com/vibieprince/Portfolio" target="_blank" class="mt-4 inline-block text-yellow-400 font-semibold hover:underline">GitHub Repo →</a>
-            </div>
-
-            <!-- Project 2 -->
-            <div class="bg-gray-800 p-6 rounded-2xl shadow-lg hover:scale-105 transition">
-                <img src="./images/Screenshot 2025-03-30 120024.png" alt="Project 3" class="w-full h-40 object-cover rounded-lg mb-4">
-                <h3 class="text-xl font-semibold">Bill Generator</h3>
-                <p class="text-gray-400 text-sm mt-2">A easy to use Bill Generation Website to help small scale businesses. Used AI for advanced python libraries to generate bill</p>
-                <a href="https://github.com/vibieprince/bill-generator" target="_blank" class="mt-4 inline-block text-yellow-400 font-semibold hover:underline">GitHub Repo →</a>
-            </div>
-
-            <!-- Project 3 -->
-            <div class="bg-gray-800 p-6 rounded-2xl shadow-lg hover:scale-105 transition">
-                <img src="./images/Razor-payment-gateway.webp" alt="Project 4" class="w-full h-40 object-cover rounded-lg mb-4">
-                <h3 class="text-xl font-semibold">Razorpay Clone</h3>
-                <p class="text-gray-400 text-sm mt-2">Demonstation of my web development skills through making of Razorpay clone </p>
-                <a href="https://github.com/vibieprince/Full-Stack-Web-Development/tree/main/TailWind_CSS%2FRazorpay-Clone" target="_blank" class="mt-4 inline-block text-yellow-400 font-semibold hover:underline">GitHub Repo →</a>
-            </div>
-        </div>
+    <section id="skills-preview" class=" reveal">
+      <div class="flex justify-between items-center mb-12">
+        <h2 class="text-xs font-bold tracking-[0.3em] text-emerald-500 uppercase">Core Skills</h2>
+        <a href="skills.html" class="text-sm text-slate-400 hover:text-emerald-400 transition">View Full Details →</a>
+      </div>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="glass p-4 rounded-xl text-center hover:border-emerald-500/50 transition">Python</div>
+        <div class="glass p-4 rounded-xl text-center hover:border-emerald-500/50 transition">SQL</div>
+        <div class="glass p-4 rounded-xl text-center hover:border-emerald-500/50 transition">Snowflake</div>
+        <div class="glass p-4 rounded-xl text-center hover:border-emerald-500/50 transition">dbt</div>
+        <div class="glass p-4 rounded-xl text-center hover:border-emerald-500/50 transition">c++</div>
+        <div class="glass p-4 rounded-xl text-center hover:border-emerald-500/50 transition">postgreSQL</div>
+      </div>
     </section>
-    
-    <!-- skill section  -->
-    <section id="skills" class="h-auto px-6 md:px-20 py-16 text-white">
-        <h2 class="text-4xl font-bold text-center mb-10">My Skills</h2>
-    
-        <!-- Skills Grid -->
-        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 text-center">
-            
-            <!-- Skill 1 -->
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg hover:scale-105 transition">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/ISO_C%2B%2B_Logo.svg/1822px-ISO_C%2B%2B_Logo.svg.png" alt="C++" class="w-16 mx-auto mb-3">
-                <h3 class="text-lg font-semibold">C++</h3>
-            </div>
-    
-            <!-- Skill 2 -->
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg hover:scale-105 transition">
-                <img src="./images/Python-logo-notext.svg.png" alt="Python" class="w-16 mx-auto mb-3">
-                <h3 class="text-lg font-semibold">Python</h3>
-            </div>
-    
-            <!-- Skill 3 -->
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg hover:scale-105 transition">
-                <img src="./images/HTML5_logo_and_wordmark.svg.png" alt="HTML" class="w-16 mx-auto mb-3">
-                <h3 class="text-lg font-semibold">HTML</h3>
-            </div>
-    
-            <!-- Skill 4 -->
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg hover:scale-105 transition">
-                <img src="./images/css3.png" alt="CSS" class="w-16 mx-auto mb-3">
-                <h3 class="text-lg font-semibold">CSS</h3>
-            </div>
-    
-            <!-- Skill 5 -->
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg hover:scale-105 transition">
-                <img src="./images/Tailwind_CSS_Logo.svg.png" alt="TailwindCSS" class="w-16 mx-auto mb-3">
-                <h3 class="text-lg font-semibold">TailwindCSS</h3>
-            </div>
-    
-            <!-- Skill 6 -->
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg hover:scale-105 transition">
-                <img src="./images/Adobe_After_Effects-Logo.wine.svg" alt="AfterEffects" class="w-20 mx-auto mb-3">
-                <h3 class="text-lg font-semibold">After Effects</h3>
-            </div>
-    
-            <!-- Skill 7 -->
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg hover:scale-105 transition">
-                <img src="./images/images.png" alt="React.js" class="w-16 mx-auto mb-3 rounded-lg">
-                <h3 class="text-lg font-semibold">Data Structures And Algorithms</h3>
-            </div>
-    
-            <!-- Skill 8 -->
-            <div class="bg-gray-800 p-6 rounded-xl shadow-lg hover:scale-105 transition">
-                <img src="./images/download-removebg-preview.png" alt="NumPy" class="w-20 mx-auto mb-3 rounded-lg">
-                <h3 class="text-lg font-semibold">NumPy</h3>
-            </div>
+
+    <!-- RESUME -->
+
+    <section id="resume" class="py-24 reveal">
+
+      <div class="glass rounded-2xl p-6 flex flex-col items-center">
+
+        <div class="hidden md:block w-full h-[500px] glass rounded-xl overflow-hidden mb-8">
+
+          <iframe src="https://docs.google.com/document/d/1Thi4uonY9-YmnyVFwsD8bRrvitsgi_6TOvGOwdghSF8/preview"
+            class="w-full h-full opacity-90" frameborder="0">
+
+          </iframe>
 
         </div>
+
+
+
+        <a href="https://docs.google.com/document/d/1Thi4uonY9-YmnyVFwsD8bRrvitsgi_6TOvGOwdghSF8/export?format=pdf"
+          target="_blank"
+          class="bg-emerald-600 hover:bg-emerald-500 text-white px-10 py-4 rounded-full font-bold transition flex items-center gap-2">
+
+          <i data-lucide="file-text" class="w-5 h-5"></i>
+
+          Download Full Resume
+
+        </a>
+
+      </div>
+
     </section>
-    
-    <!-- Contacts Section  -->
-    <section id="contact" class="h-auto px-6 md:px-20 py-16 text-white">
-        <h2 class="text-4xl font-bold text-center mb-10">Get In Touch</h2>
-    
-        <div class="flex flex-col md:flex-row justify-center items-center gap-10">
-            <!-- Left: Contact Info -->
-            <div class="text-center md:text-left space-y-4">
-                <p class="text-lg text-gray-300">Feel free to reach out for collaborations or just a chat! 🚀</p>
-    
-                <div class="flex items-center gap-3">
-                    <img src="./images/img.icons8.png" alt="Email" class="w-6">
-                    <a href="mailto:works.prince1@gmail.com" class="text-yellow-400 hover:underline">works.prince1@gmail.com</a>
-                </div>
-    
-                <div class="flex items-center gap-3">
-                    <img src="./images/call.png" alt="Phone" class="w-6">
-                    <a href="tel:+919876543210" class="text-yellow-400 hover:underline">+91 9560730326</a>
-                </div>
-    
-                <div class="flex items-center gap-3">
-                    <img src="./images/icons8-instagram-30.png" alt="Instagram" class="w-6">
-                    <a href="https://instagram.com/vibieprince" class="text-yellow-400 hover:underline" target="_blank">@vibieprince</a>
-                </div>
-            </div>
-    
-            <!-- Right: Contact Form -->
-            <form action="https://docs.google.com/forms/d/e/1FAIpQLSd3P_O40ywvmZZ3BtWHiomSGCNUrFMI40Zo1OBHMlDYh1cgGQ/formResponse" method="POST" target="_blank" class="bg-gray-800 p-6 rounded-xl w-full md:w-1/2">
-                <label class="block mb-2 text-lg font-semibold">Your Name</label>
-                <input type="text" name="entry.471110616" placeholder="Enter your name" class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-    
-                <label class="block mt-4 mb-2 text-lg font-semibold">Your Email</label>
-                <input type="email" name="entry.268243265" placeholder="Enter your email" class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400">
-    
-                <label class="block mt-4 mb-2 text-lg font-semibold">Your Message</label>
-                <textarea name="entry.401095946" placeholder="Enter your message" class="w-full p-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:outline-none focus:ring-2 focus:ring-yellow-400" rows="4"></textarea>
-    
-                <button type="submit" class="mt-6 w-full py-3 bg-yellow-500 hover:bg-yellow-600 rounded-lg font-bold transition">Send Message</button>
-            </form>
-        </div>
-    </section>
-    
 
-    <!-- Loading Bar -->
-    <div id="loading-bar" class="fixed top-0 left-0 w-0 h-0.5 bg-yellow-500 z-50"></div>
+    <!-- FOOTER / CONTACT -->
+    <footer id="contact" class="py-24 text-center reveal">
+  <h2 class="text-4xl md:text-5xl font-bold mb-8 tracking-tight">
+    Let’s build something <span class="text-emerald-400">impactful.</span>
+  </h2>
 
-    <footer class="bg-gray-300 text-white py-6 px-6 md:px-20">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-            
-            <!-- Left: Copyright -->
-            <p class="text-center md:text-left text-black text-sm">
-                © 2025 Prince Singh. All rights reserved.
-            </p>
-    
-            <!-- Center: Social Links -->
-            <div class="flex space-x-6 my-4 md:my-0">
-                <a href="https://leetcode.com/vibieprince" target="_blank" class="hover:text-yellow-400 transition">
-                    <img src="./images/LeetCode_logo_black.png" alt="LeetCode" class="w-6">
-                </a>
-                <a href="https://github.com/vibieprince" target="_blank" class="hover:text-yellow-400 transition">
-                    <img src="./images/25231.png" alt="GitHub" class="w-6">
-                </a>
-                <a href="https://linkedin.com/in/vibieprince" target="_blank" class="hover:text-yellow-400 transition">
-                    <img src="./images/linkedin-logo-linkedin-logo-transparent-linkedin-icon-transparent-free-free-png.webp" alt="LinkedIn" class="w-6">
-                </a>
-                <a href="https://instagram.com/vibieprince" target="_blank" class="hover:text-yellow-400 transition">
-                    <img src="./images/icons8-instagram-30.png" alt="Instagram" class="w-6">
-                </a>
-                <a href="mailto:works.prince1@gmail.com" class="hover:text-yellow-400 transition">
-                    <img src="./images/email-1-svgrepo-com.svg" alt="Email" class="w-6">
-                </a>
-            </div>
-    
-            <!-- Right: Back to Top Button -->
-            <button onclick="scrollToTop()" class="text-blue-700 hover:text-blue-900 transition font-semibold">
-                ↑ Back to Top
-            </button>
-    
-        </div>
-    </footer>
-    <!-- JavaScript -->
-    <script>
-        // Mobile Menu Toggle
-        const menuBtn = document.getElementById("menu-btn");
-        const closeBtn = document.getElementById("close-btn");
-        const mobileMenu = document.getElementById("mobile-menu");
+  <!-- Primary contact links -->
+  <div class="flex flex-col md:flex-row justify-center items-center gap-6">
+    <a href="mailto:prince.devds@gmail.com"
+       class="text-2xl font-medium border-b border-white/20 pb-2 hover:border-emerald-500 transition">
+      Email Me
+    </a>
 
-        menuBtn.addEventListener("click", () => {
-            mobileMenu.classList.remove("translate-x-[104%]");
-            mobileMenu.classList.add("translate-x-0");
-        });
+    <span class="hidden md:block text-slate-700">/</span>
 
-        closeBtn.addEventListener("click", () => {
-            mobileMenu.classList.remove("translate-x-0");
-            mobileMenu.classList.add("translate-x-[104%]");
-        });
+    <a href="https://linkedin.com/in/vibieprince" target="_blank"
+       class="text-2xl font-medium border-b border-white/20 pb-2 hover:border-sky-500 transition">
+      LinkedIn
+    </a>
+  </div>
 
-        window.addEventListener("click", (e) => {
-            if (!mobileMenu.contains(e.target) && !menuBtn.contains(e.target)) {
-                mobileMenu.classList.add("translate-x-[104%]");
-            }
-        });
+  <!-- Social icons -->
+  <div class="mt-10 flex justify-center gap-4">
+    <a href="https://github.com/vibieprince" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-white transition">
+      <i data-lucide="github" class="w-5 h-5"></i>
+    </a>
 
-        // Highlight Active Section on Scroll
-        const sections = document.querySelectorAll("section");
-        const navLinks = document.querySelectorAll(".nav-link");
+    <a href="https://instagram.com/vibieprince" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-pink-400 transition">
+      <i data-lucide="instagram" class="w-5 h-5"></i>
+    </a>
 
-        window.addEventListener("scroll", () => {
-            let current = "";
+    <a href="https://wa.me/919560730326" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-emerald-400 transition">
+      <i data-lucide="message-circle" class="w-5 h-5"></i>
+    </a>
+  </div>
 
-            sections.forEach((section) => {
-                const sectionTop = section.offsetTop - 100;
-                if (window.scrollY >= sectionTop) {
-                    current = section.getAttribute("id");
-                }
-            });
+  <p class="mt-20 text-slate-500 text-[10px] uppercase tracking-[0.5em]">
+    © 2026 Prince Singh
+  </p>
+</footer>
 
-            navLinks.forEach((link) => {
-                link.classList.remove("text-yellow-400");
-                if (link.getAttribute("href").includes(current)) {
-                    link.classList.add("text-yellow-400");
-                }
-            });
-        });
 
-        function startLoading() {
-        const loadingBar = document.getElementById("loading-bar");
+  </main>
 
-        loadingBar.style.width = "0%"; // Reset bar width
-        loadingBar.style.transition = "none"; // Remove previous transitions
+  <script>
+    lucide.createIcons();
 
-        setTimeout(() => {
-            loadingBar.style.transition = "width 0.5s ease-in-out"; // Smooth animation
-            loadingBar.style.width = "100%"; // Expand the bar
-        }, 50);
+    const menuBtn = document.getElementById("menuBtn");
+    const menuIconContainer = document.getElementById("menuIconContainer");
+    const mobileOverlay = document.getElementById("mobileOverlay");
+    const allLinks = document.querySelectorAll(".nav-link, .mobile-link");
 
-        setTimeout(() => {
-                loadingBar.style.opacity = "0"; // Fade out
-                setTimeout(() => {
-                    loadingBar.style.width = "0"; // Reset width after fade-out
-                    loadingBar.style.opacity = "1"; // Restore opacity
-                }, 300);
-            }, 600); // Hide bar after animation
+    let menuOpen = false;
+
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      if (menuOpen) {
+        mobileOverlay.classList.remove("opacity-0", "pointer-events-none");
+        menuIconContainer.innerHTML = '<i data-lucide="x" class="w-6 h-6 text-slate-300"></i>';
+        document.body.style.overflow = "hidden";
+      } else {
+        mobileOverlay.classList.add("opacity-0", "pointer-events-none");
+        menuIconContainer.innerHTML = '<i data-lucide="menu" class="w-6 h-6 text-slate-300"></i>';
+        document.body.style.overflow = "auto";
+      }
+      lucide.createIcons();
+    }
+
+    menuBtn.addEventListener("click", toggleMenu);
+
+    // LOGIC: Highlight the correct page
+    function highlightActivePage() {
+      const path = window.location.pathname;
+      const currentPage = path.split("/").pop() || "index.html";
+
+      allLinks.forEach(link => {
+        const linkHref = link.getAttribute("href");
+
+        // If filename matches link OR if it's the root/index.html and link is index.html
+        if (currentPage === linkHref) {
+          link.classList.add("active");
+        } else {
+          link.classList.remove("active");
         }
+      });
+    }
 
-        // Trigger loading bar when navigating between sections
-        document.querySelectorAll(".nav-link").forEach((link) => {
-            link.addEventListener("click", (event) => {
-                event.preventDefault(); // Prevent default navigation
-                const targetSection = link.getAttribute("href");
+    highlightActivePage();
 
-                startLoading(); // Start loading animation
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add("show");
+      });
+    }, { threshold: 0.1 });
 
-                setTimeout(() => {
-                    window.location.href = targetSection; // Navigate after animation
-                }, 600); // Delay navigation to match loading bar animation
-            });
-        });
-        const roles = ["Software Developer", "Data Scientist", "Video Editor"];
-        let roleIndex = 0;
-        let charIndex = 0;
-        let typingSpeed = 100;
-        let deletingSpeed = 50;
-        let isDeleting = false;
+    document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+  </script>
 
-        function typeText() {
-            const textElement = document.getElementById("typing-text");
-            let currentText = roles[roleIndex];
-
-            if (isDeleting) {
-                textElement.textContent = currentText.substring(0, charIndex--);
-            } else {
-                textElement.textContent = currentText.substring(0, charIndex++);
-            }
-
-            if (!isDeleting && charIndex === currentText.length + 1) {
-                isDeleting = true;
-                setTimeout(typeText, 1000); // Pause before deleting
-            } else if (isDeleting && charIndex === 0) {
-                isDeleting = false;
-                roleIndex = (roleIndex + 1) % roles.length;
-                setTimeout(typeText, 500); // Pause before typing new text
-            } else {
-                setTimeout(typeText, isDeleting ? deletingSpeed : typingSpeed);
-            }
-        }
-
-        // Start typing effect on page load
-        document.addEventListener("DOMContentLoaded", typeText);
-
-                // Apply fade-in effect on page load
-                document.addEventListener("DOMContentLoaded", () => {
-                document.body.classList.remove("opacity-0");
-        });
-
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-        
-    </script>
 </body>
+
 </html>

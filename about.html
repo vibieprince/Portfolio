@@ -1,199 +1,156 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prince's Portfolio | About</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>html{scroll-behavior: smooth;}</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About | Prince's Portfolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #050505; color: #f8fafc; }
+    .glass { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .reveal { opacity: 0; transform: translateY(24px); transition: all 0.8s ease; }
+    .reveal.show { opacity: 1; transform: translateY(0); }
+    .nav-link.active { color: #34d399; font-weight: 700; position: relative; }
+    .nav-link.active::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #34d399; border-radius: 50%; }
+    .mobile-link.active { color: #34d399; transform: scale(1.1); }
+  </style>
 </head>
-<body style="background-color: #003153;
-background-image: linear-gradient(315deg, #003153 0%, #1B1B1B 74%);
-" class="text-white opacity-0 transition-opacity duration-200">
+<body class="antialiased">
+  <nav class="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl z-50">
+    <div class="glass rounded-xl px-8 py-4 flex justify-between items-center">
+      <a href="index.html" class="text-sm font-bold tracking-widest uppercase">Prince</a>
+      <div class="hidden md:flex gap-8 text-[13px] font-medium text-slate-400">
+        <a href="index.html" class="nav-link transition">Home</a>
+        <a href="about.html" class="nav-link transition">About</a>
+        <a href="projects.html" class="nav-link transition">Projects</a>
+        <a href="skills.html" class="nav-link transition">Skills</a>
+        <a href="resume.html" class="nav-link transition">Resume</a>
+      </div>
+      <button id="menuBtn" class="md:hidden p-2"><span id="menuIconContainer"><i data-lucide="menu" class="w-6 h-6 text-slate-300"></i></span></button>
+      <a href="mailto:prince.devds@gmail.com" class="hidden md:block bg-white text-black text-[12px] font-bold px-5 py-2 rounded-lg hover:bg-emerald-400 transition">CONTACT</a>
+    </div>
+  </nav>
 
-    <!-- Navbar -->
-    <nav class="fixed z-50 w-full h-[9vh] backdrop-blur-md bg-black/30 flex items-center justify-between px-6">
-        <div class="flex flex-row text-2xl font-bold">Portfolio
-            <div class="pl-2 text-sm font-bold self-end text-blue-200 ">• Prince Singh</div>
+  <div id="mobileOverlay" class="fixed inset-0 z-40 bg-black/95 opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center">
+    <div class="flex flex-col gap-10 text-center text-2xl font-semibold">
+      <a href="index.html" class="mobile-link">Home</a>
+      <a href="about.html" class="mobile-link">About</a>
+      <a href="projects.html" class="mobile-link">Projects</a>
+      <a href="skills.html" class="mobile-link">Skills</a>
+      <a href="resume.html" class="mobile-link">Resume</a>
+    </div>
+  </div>
+
+  <main class="relative z-10 max-w-4xl mx-auto px-6 pt-40 pb-24">
+    <section class="reveal">
+      <h1 class="text-4xl md:text-6xl font-bold mb-8">About <span class="text-emerald-400">Me</span></h1>
+      <div class="space-y-8 text-lg text-slate-300 leading-relaxed">
+        <p>I am a third-year Computer Science student with a deep fascination for how data can be used to tell stories and solve complex problems. My journey started with a curiosity for logic and math, which naturally evolved into a passion for Data Science and Software Engineering.</p>
+        <p>Beyond the classroom, I spend my time exploring the latest in cloud data warehousing (Snowflake) and modern data stacks. I believe that clean code and clean data are the foundations of any impactful digital solution.</p>
+      </div>
+
+      <div class="mt-16 grid md:grid-cols-2 gap-8">
+        <div class="glass p-8 rounded-2xl">
+          <h3 class="text-emerald-400 font-bold mb-4 uppercase tracking-wider text-sm">Education</h3>
+          <ul class="space-y-4">
+            <li>
+              <p class="text-white font-medium">B.Tech in CSE (Data Science)</p>
+              <p class="text-slate-400 text-sm">G.L. Bajaj Institute Of Technology & Management | 2023 - 2027</p>
+            </li>
+            <li>
+              <p class="text-white font-medium">Senior Secondary</p>
+              <p class="text-slate-400 text-sm">Ram-Eesh International School | 2023</p>
+            </li>
+            <li>
+              <p class="text-white font-medium">High School</p>
+              <p class="text-slate-400 text-sm">Diamond Drill Sr. Sec. School | 2021</p>
+            </li>
+          </ul>
         </div>
-
-        <!-- Desktop Menu -->
-        <ul class="hidden md:flex space-x-6 text-xl font-bold">
-            <li><a href="./index.html" class="nav-link">Home</a></li>
-            <li><a href="#" class="nav-link text-yellow-400">About</a></li>
-            <li><a href="./projects.html" class="nav-link">Projects</a></li>
-            <li><a href="./skills.html" class="nav-link">Skills</a></li>
-            <li><a href="./contact.html" class="nav-link">Contact</a></li>
-        </ul>
-
-        <!-- Mobile Menu Button -->
-        <button id="menu-btn" class="md:hidden text-3xl">☰</button>
-
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="fixed top-[7vh] right-1 w-1/3  bg-black/90 backdrop-blur-lg p-6 rounded-md shadow-lg transform translate-x-[103%] transition-transform duration-300">
-            <button id="close-btn" class="absolute top-2 right-5 text-white text-3xl">&times;</button>
-            <ul class="flex flex-col items-center space-y-5 text-xl font-bold mt-6">
-                <li><a href="./index.html" class="nav-link">Home</a></li>
-                <li><a href="#" class="nav-link">About</a></li>
-                <li><a href="./projects.html" class="nav-link">Projects</a></li>
-                <li><a href="./skills.html" class="nav-link">Skills</a></li>
-                <li><a href="./contact.html" class="nav-link">Contact</a></li>
-            </ul>
+        <div class="glass p-8 rounded-2xl">
+          <h3 class="text-emerald-400 font-bold mb-4 uppercase tracking-wider text-sm">Interests</h3>
+          <div class="flex flex-wrap gap-3">
+            <span class="px-3 py-1 bg-white/5 rounded-full text-sm">Data Science</span>
+            <span class="px-3 py-1 bg-white/5 rounded-full text-sm">Cloud Computing</span>
+            <span class="px-3 py-1 bg-white/5 rounded-full text-sm">Machine Learning</span>
+            <span class="px-3 py-1 bg-white/5 rounded-full text-sm">Open Source</span>
+            <span class="px-3 py-1 bg-white/5 rounded-full text-sm">Software Development</span>
+          </div>
         </div>
-    </nav>
-
-    <!-- About Section  -->
-    <section id="about" class="h-auto flex flex-col md:flex-row items-center justify-center px-6 md:px-20 text-white pt-[20vh] pb-[20vh]">
-        
-        <!-- Left: Image -->
-        <div class="w-full md:w-1/3 flex justify-center mb-6 md:mb-0">
-            <img src="./images/847.jpg" alt="Profile Image" class="w-40 sm:w-64 sm:h-64  rounded-full shadow-lg transition-transform duration-300 hover:scale-105">
-        </div>
-
-        <!-- Right: About Content -->
-        <div class="w-full md:w-2/3 text-center md:text-left space-y-6">
-            <h2 class="text-4xl font-bold text-yellow-400">About Me</h2>
-            <p class="text-lg font-semibold text-gray-300">
-                Hey there! I'm <span class="text-blue-400 font-bold">Prince Singh</span>, a passionate Data Scientist and Software Developer.  
-                I love solving problems, building amazing applications, and creating engaging digital experiences.
-            </p>
-
-            <p class="text-lg font-semibold text-gray-300">
-                Apart from coding, I also create memes & videos, blending humor with creativity.  
-                I believe in continuous learning and strive to make a meaningful impact in the tech world. 🚀
-            </p>
-
-            <!-- Buttons -->
-            <div class="flex justify-center md:justify-start space-x-4">
-                <a href="./projects.html" class="px-6 py-3 bg-blue-500 hover:bg-blue-600 rounded-lg font-bold transition">View My Work</a>
-                <a href="./contact.html" class="px-6 py-3 border-2 border-yellow-500 hover:bg-yellow-500 rounded-lg font-bold transition">Contact Me</a>
-            </div>
-        </div>
-
+      </div>
     </section>
-         
-    <footer class="bg-gray-300 text-white py-6 px-6 md:px-20 h-[20vh]">
-        <div class="flex flex-col md:flex-row justify-between items-center">
-            
-            <!-- Left: Copyright -->
-            <p class="text-center md:text-left text-black text-sm">
-                © 2025 Prince Singh. All rights reserved.
-            </p>
-    
-            <!-- Center: Social Links -->
-            <div class="flex space-x-6 my-4 md:my-0">
-                <a href="https://leetcode.com/vibieprince" target="_blank" class="hover:text-yellow-400 transition">
-                    <img src="./images/LeetCode_logo_black.png" alt="LeetCode" class="w-6">
-                </a>
-                <a href="https://github.com/vibieprince" target="_blank" class="hover:text-yellow-400 transition">
-                    <img src="./images/25231.png" alt="GitHub" class="w-6">
-                </a>
-                <a href="https://linkedin.com/in/vibieprince" target="_blank" class="hover:text-yellow-400 transition">
-                    <img src="./images/linkedin-logo-linkedin-logo-transparent-linkedin-icon-transparent-free-free-png.webp" alt="LinkedIn" class="w-6">
-                </a>
-                <a href="https://instagram.com/vibieprince" target="_blank" class="hover:text-yellow-400 transition">
-                    <img src="./images/icons8-instagram-30.png" alt="Instagram" class="w-6">
-                </a>
-                <a href="mailto:works.prince1@gmail.com" class="hover:text-yellow-400 transition">
-                    <img src="./images/email-1-svgrepo-com.svg" alt="Email" class="w-6">
-                </a>
-            </div>
-    
-            <!-- Right: Back to Top Button -->
-            <button onclick="scrollToTop()" class="text-blue-700 hover:text-blue-900 transition font-semibold">
-                ↑ Back to Top
-            </button>
-    
-        </div>
-    </footer>
-    <!-- Loading Bar -->
-    <div id="loading-bar" class="fixed top-0 left-0 w-0 h-0.5 bg-yellow-500 z-50"></div>
+  </main>
+
+  <footer id="contact" class=" pb-40 text-center reveal">
+
+  <!-- Social icons -->
+  <div class="mt-10 flex justify-center gap-4">
+    <a href="mailto:prince.devds@gmail.com" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-white transition">
+      <i data-lucide="mail" class="w-5 h-5"></i>
+    </a>
+
+    <a href="https://github.com/vibieprince" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-white transition">
+      <i data-lucide="github" class="w-5 h-5"></i>
+    </a>
+
+    <a href="https://instagram.com/vibieprince" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-pink-400 transition">
+      <i data-lucide="instagram" class="w-5 h-5"></i>
+    </a>
+
+    <a href="https://wa.me/919560730326" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-emerald-400 transition">
+      <i data-lucide="message-circle" class="w-5 h-5"></i>
+    </a>
+
+    <a href="https://linkedin.com/in/vibieprince" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-emerald-400 transition">
+      <i data-lucide="linkedin" class="w-5 h-5"></i>
+    </a>
+  </div>
+
+  <p class="mt-20 text-slate-500 text-[10px] uppercase tracking-[0.5em]">
+    © 2026 Prince Singh
+  </p>
+</footer>
 
 
-    <script>
-        // Mobile Menu Toggle
-        const menuBtn = document.getElementById("menu-btn");
-        const closeBtn = document.getElementById("close-btn");
-        const mobileMenu = document.getElementById("mobile-menu");
-
-        menuBtn.addEventListener("click", () => {
-            mobileMenu.classList.remove("translate-x-[104%]");
-            mobileMenu.classList.add("translate-x-0");
-        });
-
-        closeBtn.addEventListener("click", () => {
-            mobileMenu.classList.remove("translate-x-0");
-            mobileMenu.classList.add("translate-x-[104%]");
-        });
-
-        window.addEventListener("click", (e) => {
-            if (!mobileMenu.contains(e.target) && !menuBtn.contains(e.target)) {
-                mobileMenu.classList.add("translate-x-[104%]");
-            }
-        });
-
-        // Highlight Active Section on Scroll
-        const sections = document.querySelectorAll("section");
-        const navLinks = document.querySelectorAll(".nav-link");
-
-        window.addEventListener("scroll", () => {
-            let current = "";
-
-            sections.forEach((section) => {
-                const sectionTop = section.offsetTop - 100;
-                if (window.scrollY >= sectionTop) {
-                    current = section.getAttribute("id");
-                }
-            });
-
-            navLinks.forEach((link) => {
-                link.classList.remove("text-yellow-400");
-                if (link.getAttribute("href").includes(current)) {
-                    link.classList.add("text-yellow-400");
-                }
-            });
-        });
-        function startLoading() {
-        const loadingBar = document.getElementById("loading-bar");
-
-        loadingBar.style.width = "0%"; // Reset bar width
-        loadingBar.style.transition = "none"; // Remove previous transitions
-
-        setTimeout(() => {
-            loadingBar.style.transition = "width 0.5s ease-in-out"; // Smooth animation
-            loadingBar.style.width = "100%"; // Expand the bar
-        }, 50);
-
-        setTimeout(() => {
-                loadingBar.style.opacity = "0"; // Fade out
-                setTimeout(() => {
-                    loadingBar.style.width = "0"; // Reset width after fade-out
-                    loadingBar.style.opacity = "1"; // Restore opacity
-                }, 300);
-            }, 600); // Hide bar after animation
-        }
-
-        // Trigger loading bar when navigating between sections
-        document.querySelectorAll(".nav-link").forEach((link) => {
-            link.addEventListener("click", (event) => {
-                event.preventDefault(); // Prevent default navigation
-                const targetSection = link.getAttribute("href");
-
-                startLoading(); // Start loading animation
-
-                setTimeout(() => {
-                    window.location.href = targetSection; // Navigate after animation
-                }, 600); // Delay navigation to match loading bar animation
-            });
-        });
-        // Apply fade-in effect on page load
-        document.addEventListener("DOMContentLoaded", () => {
-        document.body.classList.remove("opacity-0");
-        });
-
-        function scrollToTop() {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-        }
-    </script>
+  <script>
+    lucide.createIcons();
+    const menuBtn = document.getElementById("menuBtn");
+    const menuIconContainer = document.getElementById("menuIconContainer");
+    const mobileOverlay = document.getElementById("mobileOverlay");
+    let menuOpen = false;
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      if (menuOpen) {
+        mobileOverlay.classList.remove("opacity-0", "pointer-events-none");
+        menuIconContainer.innerHTML = '<i data-lucide="x" class="w-6 h-6"></i>';
+        document.body.style.overflow = "hidden";
+      } else {
+        mobileOverlay.classList.add("opacity-0", "pointer-events-none");
+        menuIconContainer.innerHTML = '<i data-lucide="menu" class="w-6 h-6"></i>';
+        document.body.style.overflow = "auto";
+      }
+      lucide.createIcons();
+    }
+    menuBtn.addEventListener("click", toggleMenu);
+    function highlightActivePage() {
+      const path = window.location.pathname;
+      const currentPage = path.split("/").pop() || "index.html";
+      document.querySelectorAll(".nav-link, .mobile-link").forEach(link => {
+        if (link.getAttribute("href") === currentPage) link.classList.add("active");
+      });
+    }
+    highlightActivePage();
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add("show"); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+  </script>
 </body>
 </html>
