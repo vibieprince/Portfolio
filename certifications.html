@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Certifications | Prince's Portfolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: 'Inter', sans-serif; background: #050505; color: #f8fafc; }
+    .glass { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .reveal { opacity: 0; transform: translateY(24px); transition: all 0.8s ease; }
+    .reveal.show { opacity: 1; transform: translateY(0); }
+    .nav-link.active { color: #34d399; font-weight: 700; position: relative; }
+    .nav-link.active::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #34d399; border-radius: 50%; }
+    .mobile-link.active { color: #34d399; transform: scale(1.1); }
+  </style>
+</head>
+<body class="antialiased">
+  <nav class="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl z-50">
+    <div class="glass rounded-xl px-8 py-4 flex justify-between items-center">
+      <a href="index.html" class="text-sm font-bold tracking-widest uppercase">Prince</a>
+      <div class="hidden md:flex gap-8 text-[13px] font-medium text-slate-400">
+        <a href="index.html" class="nav-link transition">Home</a>
+        <a href="about.html" class="nav-link transition">About</a>
+        <a href="certifications.html" class="nav-link transition">Certifications</a>
+        <a href="projects.html" class="nav-link transition">Projects</a>
+        <a href="skills.html" class="nav-link transition">Skills</a>
+        <a href="resume.html" class="nav-link transition">Resume</a>
+      </div>
+      <button id="menuBtn" class="md:hidden p-2"><span id="menuIconContainer"><i data-lucide="menu" class="w-6 h-6 text-slate-300"></i></span></button>
+      <a href="mailto:prince.devds@gmail.com" class="hidden md:block bg-white text-black text-[12px] font-bold px-5 py-2 rounded-lg hover:bg-emerald-400 transition">CONTACT</a>
+    </div>
+  </nav>
+
+  <div id="mobileOverlay" class="fixed inset-0 z-40 bg-black/95 opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center">
+    <div class="flex flex-col gap-10 text-center text-2xl font-semibold">
+      <a href="index.html" class="mobile-link">Home</a>
+      <a href="about.html" class="mobile-link">About</a>
+      <a href="certifications.html" class="mobile-link">Certifications</a>
+      <a href="projects.html" class="mobile-link">Projects</a>
+      <a href="skills.html" class="mobile-link">Skills</a>
+      <a href="resume.html" class="mobile-link">Resume</a>
+    </div>
+  </div>
+
+  <main class="relative z-10 max-w-6xl mx-auto px-6 pt-40 pb-24">
+  <section class="reveal mb-16">
+    <h1 class="text-4xl md:text-6xl font-bold mb-4">Credentials & <span class="text-emerald-400">Recognition</span></h1>
+    <p class="text-slate-400 text-lg max-w-2xl">A collection of my professional certifications and key milestones in my journey.</p>
+  </section>
+
+  <section class="reveal mb-24">
+    <div class="flex items-center gap-3 mb-10">
+      <div class="h-px flex-1 bg-white/10"></div>
+      <h2 class="text-xs font-bold tracking-[0.3em] text-emerald-500 uppercase">Professional Certifications</h2>
+      <div class="h-px flex-1 bg-white/10"></div>
+    </div>
+
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">      
+    
+        <div class="glass rounded-2xl overflow-hidden group border-white/5 hover:border-emerald-500/30 transition-all duration-500">
+        <div class="relative h-52 overflow-hidden bg-white/5">
+          <img src="images/Screenshot 2026-02-02 133108.png" alt="Hackerrank Advanced SQL certificate" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold group-hover:text-emerald-400 transition-colors">Hackerrank : SQL Advanced cerificate</h3>
+            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded">2026</span>
+          </div>
+          <p class="text-slate-400 text-sm mb-6 leading-relaxed"> Issued by Hackerrank. It covers topics like query optimization, data modeling, Indexing, window functions, and pivots in SQL. <br> <br> <br></p>
+          <a href="https://www.hackerrank.com/certificates/ce5279b0812d" class="w-full py-3 glass rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all">
+            Verify Certificate <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+        <div class="glass rounded-2xl overflow-hidden group border-white/5 hover:border-emerald-500/30 transition-all duration-500">
+        <div class="relative h-52 overflow-hidden bg-white/5">
+          <img src="images/Gmy0XH32ue.png" alt="Microsoft Certified: POWER BI Data Analyst Associate_NASSCOM" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold group-hover:text-emerald-400 transition-colors">Microsoft Certified: POWER BI Data Analyst Associate_NASSCOM</h3>
+            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded">2026</span>
+          </div>
+          <p class="text-slate-400 text-sm mb-6 leading-relaxed"> Issued by Microsoft. Introduction to Microsoft Fabric and deal with the data source with different visuals in Power BI tool.</p>
+          <a href="https://drive.google.com/file/d/1pAhTS_DUXTfeJQC-VRM4Ns2Tq9IFzF45/view" class="w-full py-3 glass rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all">
+            Verify Certificate <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl overflow-hidden group border-white/5 hover:border-emerald-500/30 transition-all duration-500">
+        <div class="relative h-52 overflow-hidden bg-white/5">
+          <img src="images/aFc2yjtVGH.png" alt="Data Analytics Essential" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold group-hover:text-emerald-400 transition-colors">Data Analytics Essential</h3>
+            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded">2026</span>
+          </div>
+          <p class="text-slate-400 text-sm mb-6 leading-relaxed"> Issued by CISCO. Masters the core technical skills required for data analysis like SQL,POWER BI, data tools etc.<br> <br> <br> <br></p>
+          <a href="https://drive.google.com/file/d/1H2LArOmcSyXwD6FLMiIMjrancxGCqWaG/view" class="w-full py-3 glass rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all">
+            Verify Certificate <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl overflow-hidden group border-white/5 hover:border-emerald-500/30 transition-all duration-500">
+        <div class="relative h-52 overflow-hidden bg-white/5">
+          <img src="images/Klq2Wqyj8b.png" alt="Apply AI: Analyse customer reviews" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold group-hover:text-emerald-400 transition-colors">Apply AI: Analyse customer reviews</h3>
+            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded">2025</span>
+          </div>
+          <p class="text-slate-400 text-sm mb-6 leading-relaxed"> Issued by CISCO. Includes various data analysis techniques and core skills of data with the great usage of Artificial Intelligence. <br> <br></p>
+          <a href="https://drive.google.com/file/d/1P1P8wU_lBblbHC0tVzZsHbtNnrQNYf2Q/view" class="w-full py-3 glass rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all">
+            Verify Certificate <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl overflow-hidden group border-white/5 hover:border-emerald-500/30 transition-all duration-500">
+        <div class="relative h-52 overflow-hidden bg-white/5">
+          <img src="images/1boYxnSE4w.png" alt="MongoDB certificate" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold group-hover:text-emerald-400 transition-colors">Introduction to MongoDB</h3>
+            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded">2025</span>
+          </div>
+          <p class="text-slate-400 text-sm mb-6 leading-relaxed">Issued by MongoDB University. Introduction to NoSQL databases with CRUD Operations and MongoDB Atlas.</p>
+          <a href="https://drive.google.com/file/d/1M5up6-77YlP2VYZk__lDC_kOs-J5SU6i/view" class="w-full py-3 glass rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all">
+            Verify Certificate <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl overflow-hidden group border-white/5 hover:border-emerald-500/30 transition-all duration-500">
+        <div class="relative h-52 overflow-hidden bg-white/5">
+          <img src="images/qt9p102H2N.png" alt="Data Analyst 101" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold group-hover:text-emerald-400 transition-colors">Data Analyst 101</h3>
+            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded">2025</span>
+          </div>
+          <p class="text-slate-400 text-sm mb-6 leading-relaxed"> Issued by Simplilearn and powered by Microsoft, Exploratory data analysis using Pandas, NumPy, and visualization with Matplotlib/Seaborn.</p>
+          <a href="https://www.simplilearn.com/skillup-certificate-landing?token=eyJjb3Vyc2VfaWQiOiIzMjA0IiwiY2VydGlmaWNhdGVfdXJsIjoiaHR0cHM6XC9cL2NlcnRpZmljYXRlcy5zaW1wbGljZG4ubmV0XC9zaGFyZVwvOTQ5NzQ0NV85Nzc4MjA5MTc2NDQ3MzAyODc1MC5wbmciLCJ1c2VybmFtZSI6IlBSSU5DRSBTSU5HSCJ9&utm_source=shared-certificate&utm_medium=lms&utm_campaign=shared-certificate-promotion&referrer=https%3A%2F%2Flms.simplilearn.com%2Fcourses%2F5990%2F-Data-Analyst-101%2Fcertificate%2Fdownload-skillup&%24web_only=true" class="w-full py-3 glass rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all">
+            Verify Certificate <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+      <div class="glass rounded-2xl overflow-hidden group border-white/5 hover:border-emerald-500/30 transition-all duration-500">
+        <div class="relative h-52 overflow-hidden bg-white/5">
+          <img src="images/nT4IezpENt.png" alt="Python 101 for Data Science" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold group-hover:text-emerald-400 transition-colors">Python 101 for Data Science</h3>
+            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded">2024</span>
+          </div>
+          <p class="text-slate-400 text-sm mb-6 leading-relaxed">Issued by IBM. Specialized in core skills of Python programming. </p>
+          <a href="https://courses.cognitiveclass.ai/certificates/d58173cfb5544dcebacfe05192602f34#" class="w-full py-3 glass rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all">
+            Verify Certificate <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+
+  <section class="reveal">
+    <div class="flex items-center gap-3 mb-10">
+      <div class="h-px flex-1 bg-white/10"></div>
+      <h2 class="text-xs font-bold tracking-[0.3em] text-emerald-500 uppercase">Key Achievements</h2>
+      <div class="h-px flex-1 bg-white/10"></div>
+    </div>
+
+    <div class="grid md:grid-cols-2 gap-8">
+
+      <div class="glass rounded-2xl overflow-hidden group border-white/5 hover:border-emerald-500/30 transition-all duration-500">
+        <div class="relative h-52 overflow-hidden bg-white/5">
+          <img src="images/Picsart_25-08-04_12-25-32-163.jpg" alt="CodeforBharat Season 2 runner up" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold group-hover:text-emerald-400 transition-colors">CodeforBharat Season 2 Runner up</h3>
+            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded">2024</span>
+          </div>
+          <p class="text-slate-400 text-sm mb-6 leading-relaxed">Recognized for developing an innovative technical solution for women safety device in minimal cost, competing against 10,000+ registerations nationwide.</p>
+          <a href="https://drive.google.com/file/d/1wIvQJfECudAozaFwQpUCR19BLtjMxsJZ/view?usp=drive_link" class="w-full py-3 glass rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all">
+            View Certificate <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="glass rounded-2xl overflow-hidden group border-white/5 hover:border-emerald-500/30 transition-all duration-500">
+        <div class="relative h-52 overflow-hidden bg-white/5">
+          <img src="images" alt="Hacksmart Finalist Certificate" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+          <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+          </div>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-between items-start mb-2">
+            <h3 class="text-xl font-bold group-hover:text-emerald-400 transition-colors">HackSmart Finalist at BatterySmart Gurugram</h3>
+            <span class="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-1 rounded">2024</span>
+          </div>
+          <p class="text-slate-400 text-sm mb-6 leading-relaxed">Recognized for developing an third party app useful for customer call executives for nulling the fraud calls being done by spammers though AI clone voices and other aspects.</p>
+          <a href="https://drive.google.com/file/d/1wIvQJfECudAozaFwQpUCR19BLtjMxsJZ/view?usp=drive_link" class="w-full py-3 glass rounded-xl text-center text-sm font-bold flex items-center justify-center gap-2 hover:bg-white hover:text-black transition-all">
+            View Certificate <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+  <footer id="contact" class=" pb-40 text-center reveal">
+
+  <!-- Social icons -->
+  <div class="mt-10 flex justify-center gap-4">
+    <a href="mailto:prince.devds@gmail.com" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-white transition">
+      <i data-lucide="mail" class="w-5 h-5"></i>
+    </a>
+
+    <a href="https://github.com/vibieprince" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-white transition">
+      <i data-lucide="github" class="w-5 h-5"></i>
+    </a>
+
+    <a href="https://instagram.com/vibieprince" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-pink-400 transition">
+      <i data-lucide="instagram" class="w-5 h-5"></i>
+    </a>
+
+    <a href="https://wa.me/919560730326" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-emerald-400 transition">
+      <i data-lucide="message-circle" class="w-5 h-5"></i>
+    </a>
+
+    <a href="https://linkedin.com/in/vibieprince" target="_blank"
+       class="glass glow p-3 rounded-lg text-slate-400 hover:text-emerald-400 transition">
+      <i data-lucide="linkedin" class="w-5 h-5"></i>
+    </a>
+  </div>
+
+  <p class="mt-20 text-slate-500 text-[10px] uppercase tracking-[0.5em]">
+    © 2026 Prince Singh
+  </p>
+</footer>
+
+
+  <script>
+    lucide.createIcons();
+    const menuBtn = document.getElementById("menuBtn");
+    const menuIconContainer = document.getElementById("menuIconContainer");
+    const mobileOverlay = document.getElementById("mobileOverlay");
+    let menuOpen = false;
+    function toggleMenu() {
+      menuOpen = !menuOpen;
+      if (menuOpen) {
+        mobileOverlay.classList.remove("opacity-0", "pointer-events-none");
+        menuIconContainer.innerHTML = '<i data-lucide="x" class="w-6 h-6"></i>';
+        document.body.style.overflow = "hidden";
+      } else {
+        mobileOverlay.classList.add("opacity-0", "pointer-events-none");
+        menuIconContainer.innerHTML = '<i data-lucide="menu" class="w-6 h-6"></i>';
+        document.body.style.overflow = "auto";
+      }
+      lucide.createIcons();
+    }
+    menuBtn.addEventListener("click", toggleMenu);
+    function highlightActivePage() {
+      const path = window.location.pathname;
+      const currentPage = path.split("/").pop() || "index.html";
+      document.querySelectorAll(".nav-link, .mobile-link").forEach(link => {
+        if (link.getAttribute("href") === currentPage) link.classList.add("active");
+      });
+    }
+    highlightActivePage();
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add("show"); });
+    }, { threshold: 0.1 });
+    document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
+  </script>
+</body>
+</html>
