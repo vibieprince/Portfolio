@@ -3,54 +3,118 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Skills | Prince's Portfolio</title>
+  <title>Prince Singh | Data Science Engineer</title>
+  
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="icon" type="image/x-icon" href="images/Picsart_26-06-03_21-23-45-485.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://unpkg.com/lucide@latest"></script>
-  <script>
-    window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
-  </script>
+  <script src="https://unpkg.com/github-calendar@latest/dist/github-calendar.min.js"></script>
+  <link
+  rel="stylesheet"
+  href="https://unpkg.com/github-calendar@latest/dist/github-calendar-responsive.css"
+  />
   <script defer src="/_vercel/insights/script.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            base: '#FFFFFF',
+            surface: '#FAFAFA',
+            border: '#E5E7EB',
+            primary: '#111111',
+            secondary: '#6B7280',
+            success: '#16A34A',
+          }
+        }
+      }
+    }
+  </script>
+
   <style>
-    body { font-family: 'Inter', sans-serif; background: #050505; color: #f8fafc; }
-    .glass { background: rgba(255, 255, 255, 0.04); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    .reveal { opacity: 0; transform: translateY(24px); transition: all 0.8s ease; }
-    .reveal.show { opacity: 1; transform: translateY(0); }
-    .nav-link.active { color: #34d399; font-weight: 700; position: relative; }
-    .nav-link.active::after { content: ''; position: absolute; bottom: -10px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; background: #34d399; border-radius: 50%; }
-    .mobile-link.active { color: #34d399; transform: scale(1.1); }
+    body {
+      background-color: #FFFFFF;
+      color: #111111;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Animated Hamburger Icon Menu Line Toggles */
+    .menu-bar {
+      transition: transform 0.3s ease, opacity 0.3s ease;
+    }
+    .menu-open .bar-1 {
+      transform: translateY(6px) rotate(45deg);
+    }
+    .menu-open .bar-2 {
+      opacity: 0;
+    }
+    .menu-open .bar-3 {
+      transform: translateY(-6px) rotate(-45deg);
+    }
+
+    /* Skeleton Loading State Utilities */
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: .5; }
+    }
+    .skeleton {
+      animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+      background-color: #f3f4f6;
+      border-radius: 0.25rem;
+    }
   </style>
 </head>
-<body class="antialiased">
-  <nav class="fixed top-6 left-1/2 -translate-x-1/2 w-[90%] max-w-5xl z-50">
-    <div class="glass rounded-xl px-8 py-4 flex justify-between items-center">
-      <a href="index.html" class="text-sm font-bold tracking-widest uppercase">Prince</a>
-      <div class="hidden md:flex gap-8 text-[13px] font-medium text-slate-400">
-        <a href="index.html" class="nav-link transition">Home</a>
-        <a href="about.html" class="nav-link transition">About</a>
-        <a href="certifications.html" class="nav-link transition">Certifications</a>
-        <a href="projects.html" class="nav-link transition">Projects</a>
-        <a href="skills.html" class="nav-link transition">Skills</a>
-        <a href="resume.html" class="nav-link transition">Resume</a>
+
+<body class="text-primary selection:bg-primary selection:text-white">
+  <nav class="fixed top-0 w-full bg-white/90 backdrop-blur-md border-b border-border z-50 transition-all">
+    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+      <a href="index.html" class="font-semibold tracking-tight text-lg z-50">Prince Singh</a>
+      
+      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-secondary">
+        <a href="about.html" class="hover:text-primary transition-colors">About</a>
+        <a href="projects.html" class="hover:text-primary transition-colors">Project</a>
+        <a href="skills.html" class="hover:text-primary transition-colors">Skills</a>
+        <a href="resume.html" class="hover:text-primary transition-colors">Resume</a>
+        <a href="certifications.html" class="hover:text-primary transition-colors">Certifications</a>
       </div>
-      <button id="menuBtn" class="md:hidden p-2"><span id="menuIconContainer"><i data-lucide="menu" class="w-6 h-6 text-slate-300"></i></span></button>
-      <a href="mailto:prince.devds@gmail.com" class="hidden md:block bg-white text-black text-[12px] font-bold px-5 py-2 rounded-lg hover:bg-emerald-400 transition">CONTACT</a>
+
+      <div class="hidden md:flex items-center gap-4">
+        <a href="mailto:csds23020@glbitm.ac.in" class="bg-primary text-white text-sm font-medium px-4 py-2 rounded-md hover:bg-[#374151] transition-colors">
+          Contact
+        </a>
+      </div>
+
+      <button id="menu-toggle-btn" class="flex flex-col justify-center items-center w-8 h-8 md:hidden z-50 focus:outline-none" aria-label="Toggle Navigation Menu">
+        <span class="menu-bar bar-1 w-6 h-0.5 bg-primary mb-1 rounded-sm"></span>
+        <span class="menu-bar bar-2 w-6 h-0.5 bg-primary mb-1 rounded-sm"></span>
+        <span class="menu-bar bar-3 w-6 h-0.5 bg-primary rounded-sm"></span>
+      </button>
     </div>
   </nav>
 
-  <div id="mobileOverlay" class="fixed inset-0 z-40 bg-black/95 opacity-0 pointer-events-none transition-opacity duration-300 flex items-center justify-center">
-    <div class="flex flex-col gap-10 text-center text-2xl font-semibold">
-      <a href="index.html" class="mobile-link">Home</a>
-      <a href="about.html" class="mobile-link">About</a>
-      <a href="certifications.html" class="mobile-link">Certifications</a>
-      <a href="projects.html" class="mobile-link">Projects</a>
-      <a href="skills.html" class="mobile-link">Skills</a>
-      <a href="resume.html" class="mobile-link">Resume</a>
+  <div id="mobile-navigation-overlay" class="fixed inset-0 bg-white/60 backdrop-blur-xl z-40 hidden flex-col justify-center items-center transition-all duration-300 opacity-0">
+    <div class="flex flex-col items-center gap-8 text-2xl font-semibold tracking-tight text-primary">
+      <a href="about.html" class="mobile-nav-link hover:text-secondary transition-colors">About</a>
+      <a href="projects.html" class="mobile-nav-link hover:text-secondary transition-colors">Projects</a>
+      <a href="skills.html" class="mobile-nav-link hover:text-secondary transition-colors">Skills</a>
+      <a href="resume.html" class="mobile-nav-link hover:text-secondary transition-colors">Resume</a>
+      <a href="certifications.html" class="mobile-nav-link hover:text-secondary transition-colors">Certifications</a>
+      <a href="mailto:csds23020@glbitm.ac.in" class="mobile-nav-link bg-primary text-white text-base font-medium px-8 py-3 rounded-md hover:bg-[#374151] transition-colors mt-4">Contact</a>
     </div>
   </div>
 
-  <main class="relative z-10 max-w-5xl mx-auto px-6 pt-40 pb-24">
-  <section class="reveal">
+  <main class="w-full max-w-6xl mx-auto px-4 pt-16 pb-16 sm:px-6 lg:px-8 relative z-10 overflow-hidden min-h-screen flex flex-col justify-between"> 
+
+    <section class="reveal">
     <h1 class="text-4xl md:text-6xl font-bold mb-12">Technical <span class="text-emerald-400">Skillset</span></h1>
     
     <div class="grid md:grid-cols-3 gap-8">
@@ -104,75 +168,235 @@
       </div>
     </div>
   </section>
-</main>
+  
+    <footer class="mt-20 pt-16 pb-8 border-t border-border">
+      <div class="text-center max-w-xl mx-auto mb-12">
+        <h2 class="text-3xl md:text-4xl font-bold tracking-tight mb-4">Get in touch.</h2>
+        <p class="text-black text-sm leading-relaxed">Open for corporate placement opportunities, technical collaborations, and software engineering roles.</p>
+      </div>
+      
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto mb-16">
+        <a href="mailto:csds23020@glbitm.ac.in" class="border border-border p-4 rounded-xl text-center hover:bg-surface transition-colors flex flex-col items-center justify-center gap-2 group">
+          <div class="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-primary group-hover:border-primary transition-colors"><i data-lucide="mail" class="w-4 h-4"></i></div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-secondary">Email</span>
+        </a>
+        <a href="https://linkedin.com/in/vibieprince" target="_blank" class="border border-border p-4 rounded-xl text-center hover:bg-surface transition-colors flex flex-col items-center justify-center gap-2 group">
+          <div class="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-primary group-hover:border-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" id="linkedin">
+  <circle cx="64" cy="64" r="64" fill="#0177b5"></circle>
+  <path fill="#fff" d="M92 32H36a4 4 0 0 0-4 4v56a4 4 0 0 0 4 4h56a4 4 0 0 0 4-4V36a4 4 0 0 0-4-4ZM52 86H42V56h10Zm-5-34a6 6 0 1 1 6-6 6 6 0 0 1-6 6Zm39 34H76V66c0-1.66-2.24-3-5-3-4 0-5 5.34-5 7v16H56V56h10v7c0-5 4.48-7 10-7a10 10 0 0 1 10 10Z"></path>
+</svg>
+          </div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-secondary">LinkedIn</span>
+        </a>
+        <a href="https://github.com/vibieprince" target="_blank" class="border border-border p-4 rounded-xl text-center hover:bg-surface transition-colors flex flex-col items-center justify-center gap-2 group">
+          <div class="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-primary group-hover:border-primary transition-colors"><svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"></path></svg></div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-secondary">GitHub</span>
+        </a>
+        <a href="https://wa.me/919560730326" target="_blank" class="border border-border p-4 rounded-xl text-center hover:bg-surface transition-colors flex flex-col items-center justify-center gap-2 group">
+          <div class="w-8 h-8 rounded-full bg-surface border border-border flex items-center justify-center text-primary transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2500" height="2500" viewBox="0 0 1024 1024" id="whatsapp">
+  <defs>
+    <path id="b" d="M1023.941 765.153c0 5.606-.171 17.766-.508 27.159-.824 22.982-2.646 52.639-5.401 66.151-4.141 20.306-10.392 39.472-18.542 55.425-9.643 18.871-21.943 35.775-36.559 50.364-14.584 14.56-31.472 26.812-50.315 36.416-16.036 8.172-35.322 14.426-55.744 18.549-13.378 2.701-42.812 4.488-65.648 5.3-9.402.336-21.564.505-27.15.505l-504.226-.081c-5.607 0-17.765-.172-27.158-.509-22.983-.824-52.639-2.646-66.152-5.4-20.306-4.142-39.473-10.392-55.425-18.542-18.872-9.644-35.775-21.944-50.364-36.56-14.56-14.584-26.812-31.471-36.415-50.314-8.174-16.037-14.428-35.323-18.551-55.744-2.7-13.378-4.487-42.812-5.3-65.649-.334-9.401-.503-21.563-.503-27.148l.08-504.228c0-5.607.171-17.766.508-27.159.825-22.983 2.646-52.639 5.401-66.151 4.141-20.306 10.391-39.473 18.542-55.426C34.154 93.24 46.455 76.336 61.07 61.747c14.584-14.559 31.472-26.812 50.315-36.416 16.037-8.172 35.324-14.426 55.745-18.549 13.377-2.701 42.812-4.488 65.648-5.3 9.402-.335 21.565-.504 27.149-.504l504.227.081c5.608 0 17.766.171 27.159.508 22.983.825 52.638 2.646 66.152 5.401 20.305 4.141 39.472 10.391 55.425 18.542 18.871 9.643 35.774 21.944 50.363 36.559 14.559 14.584 26.812 31.471 36.415 50.315 8.174 16.037 14.428 35.323 18.551 55.744 2.7 13.378 4.486 42.812 5.3 65.649.335 9.402.504 21.564.504 27.15l-.082 504.226z"></path>
+  </defs>
+  <linearGradient id="a" x1="512.001" x2="512.001" y1=".978" y2="1025.023" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#61fd7d"></stop>
+    <stop offset="1" stop-color="#2bb826"></stop>
+  </linearGradient>
+  <use xlink:href="#b" fill="url(#a)" overflow="visible"></use>
+  <path fill="#FFF" d="M783.302 243.246c-69.329-69.387-161.529-107.619-259.763-107.658-202.402 0-367.133 164.668-367.214 367.072-.026 64.699 16.883 127.854 49.017 183.522l-52.096 190.229 194.665-51.047c53.636 29.244 114.022 44.656 175.482 44.682h.151c202.382 0 367.128-164.688 367.21-367.094.039-98.087-38.121-190.319-107.452-259.706zM523.544 808.047h-.125c-54.767-.021-108.483-14.729-155.344-42.529l-11.146-6.612-115.517 30.293 30.834-112.592-7.259-11.544c-30.552-48.579-46.688-104.729-46.664-162.379.066-168.229 136.985-305.096 305.339-305.096 81.521.031 158.154 31.811 215.779 89.482s89.342 134.332 89.312 215.859c-.066 168.243-136.984 305.118-305.209 305.118zm167.415-228.515c-9.177-4.591-54.286-26.782-62.697-29.843-8.41-3.062-14.526-4.592-20.645 4.592-6.115 9.182-23.699 29.843-29.053 35.964-5.352 6.122-10.704 6.888-19.879 2.296-9.176-4.591-38.74-14.277-73.786-45.526-27.275-24.319-45.691-54.359-51.043-63.543-5.352-9.183-.569-14.146 4.024-18.72 4.127-4.109 9.175-10.713 13.763-16.069 4.587-5.355 6.117-9.183 9.175-15.304 3.059-6.122 1.529-11.479-.765-16.07-2.293-4.591-20.644-49.739-28.29-68.104-7.447-17.886-15.013-15.466-20.645-15.747-5.346-.266-11.469-.322-17.585-.322s-16.057 2.295-24.467 11.478-32.113 31.374-32.113 76.521c0 45.147 32.877 88.764 37.465 94.885 4.588 6.122 64.699 98.771 156.741 138.502 21.892 9.45 38.982 15.094 52.308 19.322 21.98 6.979 41.982 5.995 57.793 3.634 17.628-2.633 54.284-22.189 61.932-43.615 7.646-21.427 7.646-39.791 5.352-43.617-2.294-3.826-8.41-6.122-17.585-10.714z"></path>
+</svg>
+          </div>
+          <span class="text-xs font-semibold uppercase tracking-wider text-secondary">WhatsApp</span>
+        </a>
+      </div>
 
-<footer id="contact" class=" pb-40 text-center reveal">
+      <div class="flex items-center justify-between text-xs text-secondary border-t border-border pt-8 font-medium uppercase tracking-wider">
+        <p>&copy; 2026 Prince Singh. All rights reserved.</p>
+      </div>
+    </footer>
 
-  <!-- Social icons -->
-  <div class="mt-10 flex justify-center gap-4">
-    <a href="mailto:prince.devds@gmail.com" target="_blank"
-       class="glass glow p-3 rounded-lg text-slate-400 hover:text-white transition">
-      <i data-lucide="mail" class="w-5 h-5"></i>
-    </a>
-
-    <a href="https://github.com/vibieprince" target="_blank"
-       class="glass glow p-3 rounded-lg text-slate-400 hover:text-white transition">
-      <i data-lucide="github" class="w-5 h-5"></i>
-    </a>
-
-    <a href="https://instagram.com/vibieprince" target="_blank"
-       class="glass glow p-3 rounded-lg text-slate-400 hover:text-pink-400 transition">
-      <i data-lucide="instagram" class="w-5 h-5"></i>
-    </a>
-
-    <a href="https://wa.me/919560730326" target="_blank"
-       class="glass glow p-3 rounded-lg text-slate-400 hover:text-emerald-400 transition">
-      <i data-lucide="message-circle" class="w-5 h-5"></i>
-    </a>
-
-    <a href="https://linkedin.com/in/vibieprince" target="_blank"
-       class="glass glow p-3 rounded-lg text-slate-400 hover:text-emerald-400 transition">
-      <i data-lucide="linkedin" class="w-5 h-5"></i>
-    </a>
-  </div>
-
-  <p class="mt-20 text-slate-500 text-[10px] uppercase tracking-[0.5em]">
-    © 2026 Prince Singh
-  </p>
-</footer>
-
+  </main>
   <script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* ==================================================
+     LUCIDE ICONS
+  ================================================== */
+  if (window.lucide) {
     lucide.createIcons();
-    const menuBtn = document.getElementById("menuBtn");
-    const menuIconContainer = document.getElementById("menuIconContainer");
-    const mobileOverlay = document.getElementById("mobileOverlay");
-    let menuOpen = false;
-    function toggleMenu() {
-      menuOpen = !menuOpen;
-      if (menuOpen) {
-        mobileOverlay.classList.remove("opacity-0", "pointer-events-none");
-        menuIconContainer.innerHTML = '<i data-lucide="x" class="w-6 h-6"></i>';
-        document.body.style.overflow = "hidden";
+  }
+
+  /* ==================================================
+     MOBILE MENU
+  ================================================== */
+  const menuToggleBtn =
+    document.getElementById("menu-toggle-btn");
+
+  const mobileNavigationOverlay =
+    document.getElementById("mobile-navigation-overlay");
+
+  const mobileNavLinks =
+    document.querySelectorAll(".mobile-nav-link");
+
+  function openMobileMenu() {
+
+    if (!menuToggleBtn || !mobileNavigationOverlay)
+      return;
+
+    menuToggleBtn.classList.add("menu-open");
+
+    mobileNavigationOverlay.classList.remove("hidden");
+
+    setTimeout(() => {
+      mobileNavigationOverlay.classList.add(
+        "opacity-100",
+        "flex"
+      );
+    }, 10);
+
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeMobileMenu() {
+
+    if (!menuToggleBtn || !mobileNavigationOverlay)
+      return;
+
+    menuToggleBtn.classList.remove("menu-open");
+
+    mobileNavigationOverlay.classList.remove(
+      "opacity-100"
+    );
+
+    setTimeout(() => {
+      mobileNavigationOverlay.classList.add("hidden");
+    }, 300);
+
+    document.body.style.overflow = "auto";
+  }
+
+  if (menuToggleBtn) {
+
+    menuToggleBtn.addEventListener("click", () => {
+
+      if (
+        menuToggleBtn.classList.contains(
+          "menu-open"
+        )
+      ) {
+        closeMobileMenu();
       } else {
-        mobileOverlay.classList.add("opacity-0", "pointer-events-none");
-        menuIconContainer.innerHTML = '<i data-lucide="menu" class="w-6 h-6"></i>';
-        document.body.style.overflow = "auto";
+        openMobileMenu();
       }
-      lucide.createIcons();
-    }
-    menuBtn.addEventListener("click", toggleMenu);
-    function highlightActivePage() {
-      const path = window.location.pathname;
-      const currentPage = path.split("/").pop() || "index.html";
-      document.querySelectorAll(".nav-link, .mobile-link").forEach(link => {
-        if (link.getAttribute("href") === currentPage) link.classList.add("active");
-      });
-    }
-    highlightActivePage();
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add("show"); });
-    }, { threshold: 0.1 });
-    document.querySelectorAll(".reveal").forEach(el => observer.observe(el));
-  </script>
+
+    });
+
+  }
+
+  mobileNavLinks.forEach(link => {
+
+    link.addEventListener("click", () => {
+      closeMobileMenu();
+    });
+
+  });
+
+  /* ==================================================
+     ACTIVE NAV LINK
+  ================================================== */
+
+  const allLinks =
+    document.querySelectorAll("a[href]");
+
+  function highlightActivePage() {
+
+    const currentPage =
+      window.location.pathname
+      .split("/")
+      .pop() || "index.html";
+
+    allLinks.forEach(link => {
+
+      const href =
+        link.getAttribute("href");
+
+      if (href === currentPage) {
+
+        link.classList.add("active");
+
+      } else {
+
+        link.classList.remove("active");
+
+      }
+
+    });
+
+  }
+
+  highlightActivePage();
+
+  /* ==================================================
+     SCROLL REVEAL
+  ================================================== */
+
+  const observer =
+    new IntersectionObserver(
+
+      (entries) => {
+
+        entries.forEach(entry => {
+
+          if (entry.isIntersecting) {
+
+            entry.target.classList.add(
+              "active"
+            );
+
+            observer.unobserve(
+              entry.target
+            );
+
+          }
+
+        });
+
+      },
+
+      {
+        threshold: 0.1,
+        rootMargin:
+          "0px 0px -50px 0px"
+      }
+
+    );
+
+  document
+    .querySelectorAll(
+      ".reveal,.reveal-left,.reveal-right"
+    )
+    .forEach(el => observer.observe(el));
+
+  /* ==================================================
+     HELPERS
+  ================================================== */
+
+  function updateDOMElement(id, value) {
+
+    const element =
+      document.getElementById(id);
+
+    if (!element) return;
+
+    element.textContent = value;
+
+    element.classList.remove(
+      "animate-pulse"
+    );
+
+  }
+});
+</script>
 </body>
 </html>
