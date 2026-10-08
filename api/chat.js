@@ -1,4 +1,4 @@
-// api/chat.js - Production Portfolio Chatbot Endpoint with RAG & Gemini -> Mistral Fallback
+// api/chat.js - Production Portfolio Chatbot Endpoint with RAG & Multi-tier LLM Fallback
 
 export default async function handler(req, res) {
   // CORS Headers
@@ -24,7 +24,10 @@ export default async function handler(req, res) {
 
   const EMBEDDING_MODEL = process.env.GEMINI_EMBEDDING_MODEL || process.env.EMBEDDING_MODEL || "gemini-embedding-2";
   const EMBEDDING_DIMENSION = parseInt(process.env.EMBEDDING_DIMENSION || "768", 10);
-  const GEMINI_LLM_MODEL = process.env.GEMINI_LLM_MODEL || process.env.LLM_MODEL || "gemini-3.5-flash-lite";
+  
+  // Model Configuration with defaults prioritizing active live models
+  const PRIMARY_GEMINI_MODEL = process.env.GEMINI_LLM_MODEL || process.env.LLM_MODEL || "gemini-3.5-flash-lite";
+  const FALLBACK_GEMINI_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-3.8-flash"];
   const MISTRAL_LLM_MODEL = process.env.MISTRAL_LLM_MODEL || "mistral-small-latest";
 
   // Validate Server Credentials
@@ -71,7 +74,7 @@ STANDALONE SEARCH QUERY:`;
 
       try {
         const reformRes = await fetch(
-          `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_LLM_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+          `https://generativelanguage.googleapis.com/v1beta/models/${PRIMARY_GEMINI_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -209,13 +212,14 @@ STRICT RAG GROUNDING RULES:
 RETRIEVED PORTFOLIO KNOWLEDGE CONTEXT:
 ${retrievedContextStr}`;
 
-    // STEP 5: Call Gemini LLM (Primary) with Automatic Fallback to Mistral LLM
-    console.log(`[CHAT] Step 5: Generating response (Primary: Gemini ${GEMINI_LLM_MODEL})...`);
+    // STEP 5: Multi-tier LLM Response Generation (Gemini Primary -> Fallback Gemini Models -> Mistral)
+    console.log(`[CHAT] Step 5: Generating response (Primary model: ${PRIMARY_GEMINI_MODEL})...`);
     let finalAnswerText = null;
-    let usedProvider = "Gemini";
+    let usedProvider = "Gemini (" + PRIMARY_GEMINI_MODEL + ")";
 
-    // Helper: Call Gemini LLM
-    async function callGeminiLLM() {
+    // Helper: Call specific Gemini LLM model with safe diagnostic logging & defensive payload parsing
+    async function callGeminiModel(modelName) {
+      console.log(`[CHAT] Calling Gemini model: ${modelName}`);
       const promptMessages = [];
       promptMessages.push({ role: "user", parts: [{ text: systemPrompt }] });
       promptMessages.push({ role: "model", parts: [{ text: "Understood. I will answer visitor questions accurately based strictly on the retrieved portfolio knowledge PDF." }] });
@@ -230,7 +234,7 @@ ${retrievedContextStr}`;
       promptMessages.push({ role: "user", parts: [{ text: userQuery }] });
 
       const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_LLM_MODEL}:generateContent?key=${GEMINI_API_KEY}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -241,27 +245,60 @@ ${retrievedContextStr}`;
         }
       );
 
+      console.log(`[CHAT] Gemini HTTP status: ${res.status}`);
+
       if (!res.ok) {
         const errText = await res.text();
         let errCode = res.status;
+        let errMsg = errText;
         try {
           const parsed = JSON.parse(errText);
           errCode = parsed?.error?.code || res.status;
+          errMsg = parsed?.error?.message || errText;
         } catch (e) {}
-        const error = new Error(`Gemini LLM returned HTTP ${res.status}: ${errText}`);
+
+        console.warn(`[CHAT WARN] Gemini model ${modelName} returned HTTP ${res.status}:`, {
+          code: errCode,
+          message: errMsg ? errMsg.slice(0, 150) : ""
+        });
+
+        const error = new Error(`Gemini LLM (${modelName}) returned HTTP ${res.status}`);
         error.status = res.status;
         error.code = errCode;
         throw error;
       }
 
       const data = await res.json();
-      return data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      
+      // Safe Diagnostic Metadata Logging
+      const candidates = data?.candidates || [];
+      const firstCandidate = candidates[0] || {};
+      const finishReason = firstCandidate.finishReason || "UNKNOWN";
+      const parts = firstCandidate.content?.parts || [];
+      const text = parts[0]?.text || "";
+
+      console.log("[CHAT] Gemini response metadata:", {
+        candidatesCount: candidates.length,
+        finishReason: finishReason,
+        partsCount: parts.length,
+        textLength: text.length
+      });
+
+      // Defensive Parsing Check
+      if (!candidates.length || !parts.length || !text.trim()) {
+        console.warn(`[CHAT WARN] Gemini model ${modelName} returned 200 OK but candidate/text content was empty or blocked (finishReason: ${finishReason}).`);
+        const error = new Error(`Gemini LLM (${modelName}) returned empty text content (finishReason: ${finishReason})`);
+        error.status = 502;
+        throw error;
+      }
+
+      return text.trim();
     }
 
-    // Helper: Call Mistral LLM (Fallback)
+    // Helper: Call Mistral LLM
     async function callMistralLLM() {
       if (!MISTRAL_API_KEY) {
-        throw new Error("MISTRAL_API_KEY is not configured for fallback.");
+        throw new Error("MISTRAL_API_KEY is not configured.");
       }
 
       console.log(`[CHAT] Calling fallback provider Mistral LLM (${MISTRAL_LLM_MODEL})...`);
@@ -290,65 +327,80 @@ ${retrievedContextStr}`;
         })
       });
 
+      console.log(`[CHAT] Mistral HTTP status: ${res.status}`);
+
       if (!res.ok) {
         const errText = await res.text();
-        const error = new Error(`Mistral LLM returned HTTP ${res.status}: ${errText}`);
+        const error = new Error(`Mistral LLM returned HTTP ${res.status}`);
         error.status = res.status;
         throw error;
       }
 
       const data = await res.json();
-      return data?.choices?.[0]?.message?.content;
-    }
-
-    // Execute Primary (Gemini) -> Fallback (Mistral)
-    try {
-      finalAnswerText = await callGeminiLLM();
-      console.log("[CHAT] Gemini LLM generation succeeded.");
-    } catch (geminiError) {
-      const isQuotaOrTransient = geminiError.status === 429 || geminiError.status === 503 || geminiError.status === 404 || geminiError.status >= 500;
+      const content = data?.choices?.[0]?.message?.content;
       
-      console.warn(`[CHAT WARN] Gemini LLM failed (HTTP ${geminiError.status}). Transient/Quota eligible: ${isQuotaOrTransient}`);
-      
-      if (isQuotaOrTransient && MISTRAL_API_KEY) {
-        try {
-          console.log("[CHAT] Falling back to Mistral LLM...");
-          finalAnswerText = await callMistralLLM();
-          usedProvider = "Mistral";
-          console.log("[CHAT] Mistral LLM generation succeeded.");
-        } catch (mistralError) {
-          console.error("[CHAT ERROR] Mistral LLM fallback failed:", mistralError.message);
-          throw geminiError; // throw original if fallback fails
-        }
-      } else {
-        throw geminiError;
+      if (!content || !content.trim()) {
+        const error = new Error("Mistral returned empty content.");
+        error.status = 502;
+        throw error;
       }
+
+      return content.trim();
     }
 
-    if (!finalAnswerText) {
-      finalAnswerText = "I'm sorry, I was unable to process a response from the AI services.";
+    // Execute Multi-tier LLM Pipeline
+    // Tier 1: Primary Gemini Model
+    try {
+      finalAnswerText = await callGeminiModel(PRIMARY_GEMINI_MODEL);
+    } catch (primaryErr) {
+      console.warn(`[CHAT WARN] Primary Gemini model (${PRIMARY_GEMINI_MODEL}) failed:`, primaryErr.message);
+
+      // Tier 2: Alternative Gemini Models
+      const alternativeGeminiModels = FALLBACK_GEMINI_MODELS.filter(m => m !== PRIMARY_GEMINI_MODEL);
+      for (const fallbackModel of alternativeGeminiModels) {
+        try {
+          console.log(`[CHAT] Attempting secondary Gemini fallback model: ${fallbackModel}`);
+          finalAnswerText = await callGeminiModel(fallbackModel);
+          usedProvider = "Gemini (" + fallbackModel + ")";
+          break;
+        } catch (fbErr) {
+          console.warn(`[CHAT WARN] Secondary Gemini model (${fallbackModel}) failed:`, fbErr.message);
+        }
+      }
+
+      // Tier 3: Mistral LLM (if Gemini tiers failed)
+      if (!finalAnswerText && MISTRAL_API_KEY) {
+        try {
+          finalAnswerText = await callMistralLLM();
+          usedProvider = "Mistral (" + MISTRAL_LLM_MODEL + ")";
+        } catch (mistralErr) {
+          console.error("[CHAT ERROR] Mistral fallback failed:", mistralErr.message);
+        }
+      }
     }
 
     const sources = Array.from(sourcesMap.values());
 
-    console.log(`[CHAT] Request completed successfully using ${usedProvider}. Returning HTTP 200.`);
-
-    return res.status(200).json({
-      answer: finalAnswerText,
-      sources: sources
-    });
-
-  } catch (error) {
-    console.error("[CHAT ERROR] Exception processing /api/chat request:", error.message);
-    
-    if (error.status === 429) {
-      return res.status(429).json({
-        error: "AI service rate limit or quota exceeded. Please try again in a few seconds."
+    if (finalAnswerText) {
+      console.log(`[CHAT] Request completed successfully using provider: ${usedProvider}. Returning HTTP 200.`);
+      return res.status(200).json({
+        answer: finalAnswerText,
+        sources: sources
+      });
+    } else {
+      console.error("[CHAT ERROR] All AI providers (Primary Gemini, Alternative Gemini models, Mistral) failed to generate a response.");
+      return res.status(503).json({
+        error: "AI service temporarily unavailable. Please try again in a moment.",
+        answer: "I'm having trouble reaching my AI services right now. Please try again in a few seconds."
       });
     }
 
-    return res.status(500).json({
-      error: "An internal server error occurred while processing your request.",
+  } catch (error) {
+    console.error("[CHAT ERROR] Unhandled exception processing /api/chat request:", error.message);
+    
+    return res.status(503).json({
+      error: "AI service temporarily unavailable.",
+      answer: "I'm having trouble reaching my AI services right now. Please try again in a few seconds.",
       details: error.message
     });
   }
