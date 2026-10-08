@@ -1,6 +1,34 @@
-// api/chat.js - Production Portfolio Chatbot Endpoint with RAG & Multi-tier LLM Fallback
+// api/chat.js - Production Portfolio Chatbot Endpoint with Request ID & Safe Diagnostics
+
+import { crypto } from "crypto";
+
+// Helper: Generate unique short Request ID (e.g. req-a1b2c3d4)
+function generateRequestId() {
+  return "req-" + Math.random().toString(36).substring(2, 10);
+}
+
+// Helper: Validate Server Configuration safely without logging keys
+function validateConfiguration() {
+  const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  const SUPABASE_URL = process.env.SUPABASE_URL;
+  const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const MISTRAL_API_KEY = process.env.MISTRAL_API_KEY;
+
+  const config = {
+    hasGeminiKey: !!GEMINI_API_KEY,
+    hasSupabaseUrl: !!SUPABASE_URL,
+    hasSupabaseKey: !!SUPABASE_SERVICE_KEY,
+    hasMistralKey: !!MISTRAL_API_KEY,
+    isReady: !!(GEMINI_API_KEY && SUPABASE_URL && SUPABASE_SERVICE_KEY)
+  };
+
+  return config;
+}
 
 export default async function handler(req, res) {
+  const reqId = generateRequestId();
+  const startTime = Date.now();
+
   // CORS Headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -11,12 +39,16 @@ export default async function handler(req, res) {
   }
 
   if (req.method !== "POST") {
-    return res.status(405).json({ error: "Method not allowed. Use POST." });
+    return res.status(405).json({
+      error: "METHOD_NOT_ALLOWED",
+      answer: "Method not allowed. Use POST.",
+      requestId: reqId
+    });
   }
 
-  console.log("[CHAT] Request received at /api/chat");
+  console.log(`[CHAT ${reqId}] Request received at /api/chat`);
 
-  // Environment Variables
+  // Environment Variables & Aliases
   const SUPABASE_URL = process.env.SUPABASE_URL;
   const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
   const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
@@ -25,21 +57,30 @@ export default async function handler(req, res) {
   const EMBEDDING_MODEL = process.env.GEMINI_EMBEDDING_MODEL || process.env.EMBEDDING_MODEL || "gemini-embedding-2";
   const EMBEDDING_DIMENSION = parseInt(process.env.EMBEDDING_DIMENSION || "768", 10);
   
-  // Model Configuration with defaults prioritizing active live models
   const PRIMARY_GEMINI_MODEL = process.env.GEMINI_LLM_MODEL || process.env.LLM_MODEL || "gemini-3.5-flash-lite";
   const FALLBACK_GEMINI_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-3.8-flash"];
   const MISTRAL_LLM_MODEL = process.env.MISTRAL_LLM_MODEL || "mistral-small-latest";
+  const CHAT_DEBUG = process.env.CHAT_DEBUG === "true";
 
-  // Validate Server Credentials
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !GEMINI_API_KEY) {
-    console.error("[CHAT ERROR] Server configuration missing required environment variables.");
+  // Configuration Audit Logging
+  const configState = validateConfiguration();
+  console.log(`[CHAT ${reqId}] Config Audit:`, {
+    GEMINI_API_KEY: configState.hasGeminiKey ? "configured" : "MISSING",
+    GEMINI_LLM_MODEL: PRIMARY_GEMINI_MODEL,
+    EMBEDDING_MODEL: EMBEDDING_MODEL,
+    SUPABASE_URL: configState.hasSupabaseUrl ? "configured" : "MISSING",
+    SUPABASE_SERVICE_KEY: configState.hasSupabaseKey ? "configured" : "MISSING",
+    MISTRAL_API_KEY: configState.hasMistralKey ? "configured" : "not-configured",
+    MISTRAL_LLM_MODEL: MISTRAL_LLM_MODEL
+  });
+
+  // Strict Pre-flight Configuration Failure Check
+  if (!configState.isReady) {
+    console.error(`[CHAT ${reqId} CONFIG ERROR] Server missing required environment variables. Required: GEMINI_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_KEY.`);
     return res.status(500).json({
-      error: "Server configuration missing required environment variables.",
-      details: {
-        GEMINI_API_KEY: !!GEMINI_API_KEY,
-        SUPABASE_URL: !!SUPABASE_URL,
-        SUPABASE_SERVICE_KEY: !!SUPABASE_SERVICE_KEY
-      }
+      error: "SERVER_CONFIGURATION_ERROR",
+      answer: "Server configuration missing required environment variables.",
+      requestId: reqId
     });
   }
 
@@ -47,17 +88,23 @@ export default async function handler(req, res) {
     const { message, conversation = [], pageContext = {} } = req.body || {};
 
     if (!message || typeof message !== "string" || message.trim().length === 0) {
-      return res.status(400).json({ error: "Message parameter is required." });
+      console.warn(`[CHAT ${reqId}] Invalid user message provided.`);
+      return res.status(400).json({
+        error: "INVALID_REQUEST",
+        answer: "Message parameter is required.",
+        requestId: reqId
+      });
     }
 
     const userQuery = message.trim().slice(0, 1000);
     const recentHistory = Array.isArray(conversation) ? conversation.slice(-8) : [];
+    console.log(`[CHAT ${reqId}] Input payload validated. Query length: ${userQuery.length} chars, History turns: ${recentHistory.length}`);
 
     // STEP 1: Standalone Search Query Reformulation
     let retrievalQuery = userQuery;
 
     if (recentHistory.length > 0) {
-      console.log("[CHAT] Step 1: Reformulating context-aware standalone search query...");
+      console.log(`[CHAT ${reqId}] Step 1: Reformulating context-aware standalone search query...`);
       const historyText = recentHistory
         .map((m) => `${m.role.toUpperCase()}: ${m.content}`)
         .join("\n");
@@ -90,16 +137,16 @@ STANDALONE SEARCH QUERY:`;
           const standaloneText = reformData?.candidates?.[0]?.content?.parts?.[0]?.text;
           if (standaloneText && standaloneText.trim()) {
             retrievalQuery = standaloneText.trim();
-            console.log(`[CHAT] Query reformulated to: "${retrievalQuery}"`);
+            console.log(`[CHAT ${reqId}] Query reformulated successfully (length: ${retrievalQuery.length} chars)`);
           }
         }
       } catch (err) {
-        console.warn("[CHAT WARN] Query reform fetch failed, using raw query:", err.message);
+        console.warn(`[CHAT ${reqId} WARN] Query reform fetch failed, using raw query:`, err.message);
       }
     }
 
     // STEP 2: Generate Vector Query Embedding (Gemini)
-    console.log(`[CHAT] Step 2: Generating query embedding via ${EMBEDDING_MODEL}...`);
+    console.log(`[CHAT ${reqId}] Step 2: Generating query embedding via ${EMBEDDING_MODEL}...`);
     let queryVector = null;
 
     try {
@@ -119,23 +166,24 @@ STANDALONE SEARCH QUERY:`;
 
       if (!embedRes.ok) {
         const errText = await embedRes.text();
-        console.error(`[CHAT ERROR] Gemini Embedding API returned HTTP ${embedRes.status}:`, errText);
-        throw new Error(`Gemini Embedding API returned ${embedRes.status}: ${errText}`);
+        console.error(`[CHAT ${reqId} ERROR] Gemini Embedding API returned HTTP ${embedRes.status}`);
+        throw new Error(`Gemini Embedding API returned ${embedRes.status}: ${errText.slice(0, 150)}`);
       }
 
       const embedData = await embedRes.json();
       queryVector = embedData?.embedding?.values;
-      console.log(`[CHAT] Embedding generated successfully (${queryVector ? queryVector.length : 0} dims).`);
+      console.log(`[CHAT ${reqId}] Embedding generated successfully (${queryVector ? queryVector.length : 0} dims).`);
     } catch (embedError) {
-      console.error("[CHAT ERROR] Gemini Embedding service failed:", embedError.message);
+      console.error(`[CHAT ${reqId} ERROR] Gemini Embedding service failed:`, embedError.message);
       return res.status(502).json({
-        error: "Failed to communicate with Gemini Embedding service.",
-        details: embedError.message
+        error: "EMBEDDING_SERVICE_ERROR",
+        answer: "Failed to communicate with Gemini Embedding service.",
+        requestId: reqId
       });
     }
 
     // STEP 3: Search Supabase pgvector Vector Database
-    console.log("[CHAT] Step 3: Querying Supabase pgvector RPC match_documents...");
+    console.log(`[CHAT ${reqId}] Step 3: Querying Supabase pgvector RPC match_documents...`);
     let retrievedChunks = [];
 
     try {
@@ -156,17 +204,18 @@ STANDALONE SEARCH QUERY:`;
 
       if (!rpcRes.ok) {
         const rpcErr = await rpcRes.text();
-        console.error(`[CHAT ERROR] Supabase RPC returned HTTP ${rpcRes.status}:`, rpcErr);
-        throw new Error(`Supabase RPC returned ${rpcRes.status}: ${rpcErr}`);
+        console.error(`[CHAT ${reqId} ERROR] Supabase RPC returned HTTP ${rpcRes.status}`);
+        throw new Error(`Supabase RPC returned ${rpcRes.status}: ${rpcErr.slice(0, 150)}`);
       }
 
       retrievedChunks = await rpcRes.json();
-      console.log(`[CHAT] Supabase search completed. Retrieved ${retrievedChunks.length} chunks.`);
+      console.log(`[CHAT ${reqId}] Supabase search completed. Retrieved ${retrievedChunks.length} chunks.`);
     } catch (rpcError) {
-      console.error("[CHAT ERROR] Supabase RPC fetch failed:", rpcError.message);
+      console.error(`[CHAT ${reqId} ERROR] Supabase RPC fetch failed:`, rpcError.message);
       return res.status(502).json({
-        error: "Failed to connect to Supabase vector database.",
-        details: rpcError.message
+        error: "VECTOR_DATABASE_ERROR",
+        answer: "Failed to connect to Supabase vector database.",
+        requestId: reqId
       });
     }
 
@@ -212,14 +261,14 @@ STRICT RAG GROUNDING RULES:
 RETRIEVED PORTFOLIO KNOWLEDGE CONTEXT:
 ${retrievedContextStr}`;
 
-    // STEP 5: Multi-tier LLM Response Generation (Gemini Primary -> Fallback Gemini Models -> Mistral)
-    console.log(`[CHAT] Step 5: Generating response (Primary model: ${PRIMARY_GEMINI_MODEL})...`);
+    // STEP 5: Multi-tier LLM Response Generation (Gemini Primary -> Alternative Gemini Models -> Mistral)
+    console.log(`[CHAT ${reqId}] Step 5: Generating response (Primary model: ${PRIMARY_GEMINI_MODEL})...`);
     let finalAnswerText = null;
     let usedProvider = "Gemini (" + PRIMARY_GEMINI_MODEL + ")";
 
     // Helper: Call specific Gemini LLM model with safe diagnostic logging & defensive payload parsing
     async function callGeminiModel(modelName) {
-      console.log(`[CHAT] Calling Gemini model: ${modelName}`);
+      console.log(`[CHAT ${reqId}] Attempting Gemini model: ${modelName}`);
       const promptMessages = [];
       promptMessages.push({ role: "user", parts: [{ text: systemPrompt }] });
       promptMessages.push({ role: "model", parts: [{ text: "Understood. I will answer visitor questions accurately based strictly on the retrieved portfolio knowledge PDF." }] });
@@ -245,7 +294,7 @@ ${retrievedContextStr}`;
         }
       );
 
-      console.log(`[CHAT] Gemini HTTP status: ${res.status}`);
+      console.log(`[CHAT ${reqId}] Gemini (${modelName}) HTTP status: ${res.status}`);
 
       if (!res.ok) {
         const errText = await res.text();
@@ -257,7 +306,7 @@ ${retrievedContextStr}`;
           errMsg = parsed?.error?.message || errText;
         } catch (e) {}
 
-        console.warn(`[CHAT WARN] Gemini model ${modelName} returned HTTP ${res.status}:`, {
+        console.warn(`[CHAT ${reqId} WARN] Gemini model ${modelName} returned HTTP ${res.status}:`, {
           code: errCode,
           message: errMsg ? errMsg.slice(0, 150) : ""
         });
@@ -277,7 +326,7 @@ ${retrievedContextStr}`;
       const parts = firstCandidate.content?.parts || [];
       const text = parts[0]?.text || "";
 
-      console.log("[CHAT] Gemini response metadata:", {
+      console.log(`[CHAT ${reqId}] Gemini (${modelName}) response metadata:`, {
         candidatesCount: candidates.length,
         finishReason: finishReason,
         partsCount: parts.length,
@@ -286,7 +335,7 @@ ${retrievedContextStr}`;
 
       // Defensive Parsing Check
       if (!candidates.length || !parts.length || !text.trim()) {
-        console.warn(`[CHAT WARN] Gemini model ${modelName} returned 200 OK but candidate/text content was empty or blocked (finishReason: ${finishReason}).`);
+        console.warn(`[CHAT ${reqId} WARN] Gemini model ${modelName} returned 200 OK but candidate/text content was empty or blocked (finishReason: ${finishReason}).`);
         const error = new Error(`Gemini LLM (${modelName}) returned empty text content (finishReason: ${finishReason})`);
         error.status = 502;
         throw error;
@@ -298,10 +347,11 @@ ${retrievedContextStr}`;
     // Helper: Call Mistral LLM
     async function callMistralLLM() {
       if (!MISTRAL_API_KEY) {
+        console.warn(`[CHAT ${reqId} WARN] Mistral fallback requested but MISTRAL_API_KEY is not configured.`);
         throw new Error("MISTRAL_API_KEY is not configured.");
       }
 
-      console.log(`[CHAT] Calling fallback provider Mistral LLM (${MISTRAL_LLM_MODEL})...`);
+      console.log(`[CHAT ${reqId}] Calling fallback provider Mistral LLM (${MISTRAL_LLM_MODEL})...`);
       const messages = [{ role: "system", content: systemPrompt }];
 
       recentHistory.forEach((turn) => {
@@ -327,10 +377,11 @@ ${retrievedContextStr}`;
         })
       });
 
-      console.log(`[CHAT] Mistral HTTP status: ${res.status}`);
+      console.log(`[CHAT ${reqId}] Mistral HTTP status: ${res.status}`);
 
       if (!res.ok) {
         const errText = await res.text();
+        console.warn(`[CHAT ${reqId} WARN] Mistral LLM returned HTTP ${res.status}`);
         const error = new Error(`Mistral LLM returned HTTP ${res.status}`);
         error.status = res.status;
         throw error;
@@ -353,55 +404,60 @@ ${retrievedContextStr}`;
     try {
       finalAnswerText = await callGeminiModel(PRIMARY_GEMINI_MODEL);
     } catch (primaryErr) {
-      console.warn(`[CHAT WARN] Primary Gemini model (${PRIMARY_GEMINI_MODEL}) failed:`, primaryErr.message);
+      console.warn(`[CHAT ${reqId} WARN] Primary Gemini model (${PRIMARY_GEMINI_MODEL}) failed:`, primaryErr.message);
 
       // Tier 2: Alternative Gemini Models
       const alternativeGeminiModels = FALLBACK_GEMINI_MODELS.filter(m => m !== PRIMARY_GEMINI_MODEL);
       for (const fallbackModel of alternativeGeminiModels) {
         try {
-          console.log(`[CHAT] Attempting secondary Gemini fallback model: ${fallbackModel}`);
+          console.log(`[CHAT ${reqId}] MODEL FALLBACK: ${PRIMARY_GEMINI_MODEL} → ${fallbackModel}`);
           finalAnswerText = await callGeminiModel(fallbackModel);
           usedProvider = "Gemini (" + fallbackModel + ")";
           break;
         } catch (fbErr) {
-          console.warn(`[CHAT WARN] Secondary Gemini model (${fallbackModel}) failed:`, fbErr.message);
+          console.warn(`[CHAT ${reqId} WARN] Secondary Gemini model (${fallbackModel}) failed:`, fbErr.message);
         }
       }
 
-      // Tier 3: Mistral LLM (if Gemini tiers failed)
-      if (!finalAnswerText && MISTRAL_API_KEY) {
+      // Tier 3: Mistral LLM (if all Gemini tiers failed)
+      if (!finalAnswerText && configState.hasMistralKey) {
         try {
+          console.log(`[CHAT ${reqId}] PROVIDER FALLBACK: Gemini → Mistral (${MISTRAL_LLM_MODEL})`);
           finalAnswerText = await callMistralLLM();
           usedProvider = "Mistral (" + MISTRAL_LLM_MODEL + ")";
         } catch (mistralErr) {
-          console.error("[CHAT ERROR] Mistral fallback failed:", mistralErr.message);
+          console.error(`[CHAT ${reqId} ERROR] Mistral fallback failed:`, mistralErr.message);
         }
       }
     }
 
     const sources = Array.from(sourcesMap.values());
+    const duration = Date.now() - startTime;
 
     if (finalAnswerText) {
-      console.log(`[CHAT] Request completed successfully using provider: ${usedProvider}. Returning HTTP 200.`);
+      console.log(`[CHAT ${reqId}] Request completed successfully using ${usedProvider} in ${duration}ms. Returning HTTP 200.`);
       return res.status(200).json({
         answer: finalAnswerText,
-        sources: sources
+        sources: sources,
+        requestId: reqId
       });
     } else {
-      console.error("[CHAT ERROR] All AI providers (Primary Gemini, Alternative Gemini models, Mistral) failed to generate a response.");
+      console.error(`[CHAT ${reqId} ERROR] All AI providers (Primary Gemini, Alternative Gemini models, Mistral) failed to generate a response in ${duration}ms.`);
       return res.status(503).json({
-        error: "AI service temporarily unavailable. Please try again in a moment.",
-        answer: "I'm having trouble reaching my AI services right now. Please try again in a few seconds."
+        error: "AI_SERVICE_TEMPORARILY_UNAVAILABLE",
+        answer: "I'm having trouble reaching my AI services right now. Please try again in a few seconds.",
+        requestId: reqId
       });
     }
 
   } catch (error) {
-    console.error("[CHAT ERROR] Unhandled exception processing /api/chat request:", error.message);
+    const duration = Date.now() - startTime;
+    console.error(`[CHAT ${reqId} ERROR] Unhandled exception processing request (${duration}ms):`, error.message);
     
     return res.status(503).json({
-      error: "AI service temporarily unavailable.",
+      error: "AI_SERVICE_TEMPORARILY_UNAVAILABLE",
       answer: "I'm having trouble reaching my AI services right now. Please try again in a few seconds.",
-      details: error.message
+      requestId: reqId
     });
   }
 }
