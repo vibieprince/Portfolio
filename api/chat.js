@@ -1,6 +1,4 @@
-// api/chat.js - Production Portfolio Chatbot Endpoint with RAG, SSE Token Streaming, Recruiter Grounding & Gemini -> Mistral Fallback
-
-import { crypto } from "crypto";
+// api/chat.js - Production Portfolio Chatbot Endpoint with Robust SSE Token Streaming & Recruiter Grounding
 
 function generateRequestId() {
   return "req-" + Math.random().toString(36).substring(2, 10);
@@ -54,7 +52,6 @@ export default async function handler(req, res) {
   const EMBEDDING_DIMENSION = parseInt(process.env.EMBEDDING_DIMENSION || "768", 10);
   
   const PRIMARY_GEMINI_MODEL = process.env.GEMINI_LLM_MODEL || process.env.LLM_MODEL || "gemini-3.5-flash-lite";
-  const FALLBACK_GEMINI_MODELS = ["gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-3.8-flash"];
   const MISTRAL_LLM_MODEL = process.env.MISTRAL_LLM_MODEL || "mistral-small-latest";
 
   const configState = validateConfiguration();
@@ -231,11 +228,12 @@ export default async function handler(req, res) {
 Your primary mission is to help recruiters, technical hiring managers, and interviewers evaluate Prince Singh's suitability for engineering roles (Software/Backend, Data Science, Data Engineering, Cloud/DevOps, AI/GenAI).
 
 KNOWLEDGE BOUNDARY & RULES:
-1. FACTUAL ANSWERS: For explicit facts about Prince (education, CGPA, technologies, project features, hackathon results, certifications, dates), answer strictly based on the retrieved portfolio knowledge PDF context. NEVER fabricate CGPA, marks, companies, internships, project results, certifications, or awards.
-2. RECRUITER INFERENCES: If asked for recruiter-focused evaluation, technical analysis, interview question suggestions, or potential project challenges (e.g. "Why consider Prince?", "What challenges did he face in RentEase?", "What interviewer questions could be asked?"), answer thoughtfully using his portfolio projects and skills as evidence, but CLEARLY label your analysis as an inference/evaluation based on documented evidence (e.g., "Based on documented project evidence...").
-3. GENERAL TASKS REDIRECTION: If asked to perform unrelated general-purpose tasks (e.g., "Write a Python script to reverse a string", "Explain quantum physics", "Who won the World Cup?"), politely refuse and redirect: "I am Prince's portfolio assistant, focused on answering questions about Prince's education, skills, projects, achievements, and technical background rather than general tasks."
-4. If factual information is missing from the retrieved context, state: "I don't have that specific information in Prince's portfolio knowledge base."
-5. Be professional, clear, concise, and structured.
+1. GREETINGS & SMALL TALK: If the user greets you (e.g. "hi", "hello", "good morning", "hey", "who are you?"), respond warmly, introduce yourself as Prince's AI Portfolio Assistant, and offer assistance regarding his education, skills, projects, achievements, and technical profile.
+2. FACTUAL ANSWERS: For explicit facts about Prince (education, CGPA, technologies, project features, hackathon results, certifications, dates), answer strictly based on the retrieved portfolio knowledge PDF context. NEVER fabricate CGPA, marks, companies, internships, project results, certifications, or awards.
+3. RECRUITER INFERENCES: If asked for recruiter-focused evaluation, technical analysis, interview question suggestions, or potential project challenges (e.g. "Why consider Prince?", "What challenges did he face in RentEase?", "What interviewer questions could be asked?"), answer thoughtfully using his portfolio projects and skills as evidence, but CLEARLY label your analysis as an inference/evaluation based on documented evidence (e.g., "Based on documented project evidence...").
+4. GENERAL TASKS REDIRECTION: If asked to perform unrelated general-purpose tasks (e.g., "Write a Python script to reverse a string", "Explain quantum physics", "Who won the World Cup?"), politely refuse and redirect: "I am Prince's portfolio assistant, focused on answering questions about Prince's education, skills, projects, achievements, and technical background rather than general tasks."
+5. If factual information is missing from the retrieved context, state: "I don't have that specific information in Prince's portfolio knowledge base."
+6. Be professional, clear, concise, and structured.
 
 RETRIEVED PORTFOLIO KNOWLEDGE CONTEXT:
 ${retrievedContextStr}`;
@@ -248,7 +246,7 @@ ${retrievedContextStr}`;
       res.setHeader("Content-Type", "text/event-stream");
       res.setHeader("Cache-Control", "no-cache, no-transform");
       res.setHeader("Connection", "keep-alive");
-      res.setHeader("X-Accel-Buffering", "no"); // Disable buffering on Nginx/Vercel proxies
+      res.setHeader("X-Accel-Buffering", "no");
 
       const sendSSEEvent = (event, data) => {
         res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
@@ -273,7 +271,9 @@ ${retrievedContextStr}`;
         promptMessages.push({ role: "user", parts: [{ text: userQuery }] });
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000); // 6s connection timeout guard
+        const timeoutId = setTimeout(() => controller.abort(), 7000);
+
+        console.log(`[CHAT ${reqId}] Sending stream request to Gemini (${modelName})...`);
 
         const geminiRes = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:streamGenerateContent?alt=sse&key=${GEMINI_API_KEY}`,
@@ -289,33 +289,48 @@ ${retrievedContextStr}`;
         );
         clearTimeout(timeoutId);
 
+        console.log(`[CHAT ${reqId}] Gemini (${modelName}) HTTP status: ${geminiRes.status}`);
+
         if (!geminiRes.ok) {
-          throw new Error(`Gemini stream HTTP ${geminiRes.status}`);
+          const errText = await geminiRes.text();
+          console.warn(`[CHAT ${reqId} WARN] Gemini stream HTTP ${geminiRes.status}: ${errText.slice(0, 150)}`);
+          const err = new Error(`Gemini stream HTTP ${geminiRes.status}`);
+          err.status = geminiRes.status;
+          throw err;
         }
 
-        // Read SSE stream from Gemini
+        // Read SSE stream from Gemini using Web Streams API + TextDecoder
         const reader = geminiRes.body.getReader();
         const decoder = new TextDecoder("utf-8");
         let buffer = "";
         let hasStreamedToken = false;
+        let firstTokenLogged = false;
+
+        console.log(`[CHAT ${reqId}] Gemini SSE parser initialized`);
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          buffer += decoder.decode(value, { stream: true });
 
+          buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split("\n");
           buffer = lines.pop() || "";
 
           for (const line of lines) {
-            const trimmedLine = line.trim();
-            if (trimmedLine.startswith("data: ")) {
+            const rawLine = typeof line === "string" ? line : String(line);
+            const trimmedLine = rawLine.trim();
+
+            if (trimmedLine.startsWith("data: ")) {
               const jsonStr = trimmedLine.substring(6).trim();
               if (jsonStr === "[DONE]") continue;
               try {
                 const parsed = JSON.parse(jsonStr);
                 const textChunk = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
                 if (textChunk) {
+                  if (!firstTokenLogged) {
+                    console.log(`[CHAT ${reqId}] Gemini first token received`);
+                    firstTokenLogged = true;
+                  }
                   hasStreamedToken = true;
                   sendSSEEvent("token", { text: textChunk });
                 }
@@ -324,16 +339,31 @@ ${retrievedContextStr}`;
           }
         }
 
-        if (buffer.trim().startsWith("data: ")) {
-          const jsonStr = buffer.trim().substring(6).trim();
-          try {
-            const parsed = JSON.parse(jsonStr);
-            const textChunk = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
-            if (textChunk) {
-              hasStreamedToken = true;
-              sendSSEEvent("token", { text: textChunk });
+        // Flush remaining buffer
+        buffer += decoder.decode();
+        if (buffer.trim()) {
+          const lines = buffer.split("\n");
+          for (const line of lines) {
+            const rawLine = typeof line === "string" ? line : String(line);
+            const trimmedLine = rawLine.trim();
+            if (trimmedLine.startsWith("data: ")) {
+              const jsonStr = trimmedLine.substring(6).trim();
+              if (jsonStr !== "[DONE]") {
+                try {
+                  const parsed = JSON.parse(jsonStr);
+                  const textChunk = parsed?.candidates?.[0]?.content?.parts?.[0]?.text;
+                  if (textChunk) {
+                    if (!firstTokenLogged) {
+                      console.log(`[CHAT ${reqId}] Gemini first token received`);
+                      firstTokenLogged = true;
+                    }
+                    hasStreamedToken = true;
+                    sendSSEEvent("token", { text: textChunk });
+                  }
+                } catch (e) {}
+              }
             }
-          } catch (e) {}
+          }
         }
 
         if (!hasStreamedToken) {
@@ -357,7 +387,9 @@ ${retrievedContextStr}`;
         messages.push({ role: "user", content: userQuery });
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 6000);
+        const timeoutId = setTimeout(() => controller.abort(), 7000);
+
+        console.log(`[CHAT ${reqId}] Sending stream request to Mistral (${MISTRAL_LLM_MODEL})...`);
 
         const mistralRes = await fetch("https://api.mistral.ai/v1/chat/completions", {
           method: "POST",
@@ -376,23 +408,36 @@ ${retrievedContextStr}`;
         });
         clearTimeout(timeoutId);
 
-        if (!mistralRes.ok) throw new Error(`Mistral stream HTTP ${mistralRes.status}`);
+        console.log(`[CHAT ${reqId}] Mistral HTTP status: ${mistralRes.status}`);
+
+        if (!mistralRes.ok) {
+          const errText = await mistralRes.text();
+          console.warn(`[CHAT ${reqId} WARN] Mistral stream HTTP ${mistralRes.status}: ${errText.slice(0, 150)}`);
+          const err = new Error(`Mistral stream HTTP ${mistralRes.status}`);
+          err.status = mistralRes.status;
+          throw err;
+        }
 
         const reader = mistralRes.body.getReader();
         const decoder = new TextDecoder("utf-8");
         let buffer = "";
         let hasStreamedToken = false;
+        let firstTokenLogged = false;
+
+        console.log(`[CHAT ${reqId}] Mistral SSE parser initialized`);
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          buffer += decoder.decode(value, { stream: true });
 
+          buffer += decoder.decode(value, { stream: true });
           const lines = buffer.split("\n");
           buffer = lines.pop() || "";
 
           for (const line of lines) {
-            const trimmedLine = line.trim();
+            const rawLine = typeof line === "string" ? line : String(line);
+            const trimmedLine = rawLine.trim();
+
             if (trimmedLine.startsWith("data: ")) {
               const jsonStr = trimmedLine.substring(6).trim();
               if (jsonStr === "[DONE]") continue;
@@ -400,6 +445,10 @@ ${retrievedContextStr}`;
                 const parsed = JSON.parse(jsonStr);
                 const textChunk = parsed?.choices?.[0]?.delta?.content;
                 if (textChunk) {
+                  if (!firstTokenLogged) {
+                    console.log(`[CHAT ${reqId}] Mistral first token received`);
+                    firstTokenLogged = true;
+                  }
                   hasStreamedToken = true;
                   sendSSEEvent("token", { text: textChunk });
                 }
@@ -412,7 +461,7 @@ ${retrievedContextStr}`;
         return true;
       };
 
-      // Try Tier 1: Primary Gemini
+      // Try Primary Gemini Model
       try {
         console.log(`[CHAT ${reqId}] Starting SSE stream with primary Gemini model (${PRIMARY_GEMINI_MODEL})...`);
         await attemptGeminiStream(PRIMARY_GEMINI_MODEL);
@@ -420,29 +469,15 @@ ${retrievedContextStr}`;
       } catch (geminiErr) {
         console.warn(`[CHAT ${reqId} WARN] Primary Gemini stream failed before token delivery:`, geminiErr.message);
 
-        // Try Tier 2: Secondary Gemini Models
-        const fallbackModels = FALLBACK_GEMINI_MODELS.filter((m) => m !== PRIMARY_GEMINI_MODEL);
-        for (const fbModel of fallbackModels) {
-          try {
-            console.log(`[CHAT ${reqId}] MODEL STREAM FALLBACK: ${PRIMARY_GEMINI_MODEL} → ${fbModel}`);
-            await attemptGeminiStream(fbModel);
-            streamSuccess = true;
-            activeProvider = "Gemini (" + fbModel + ")";
-            break;
-          } catch (fbErr) {
-            console.warn(`[CHAT ${reqId} WARN] Secondary Gemini stream (${fbModel}) failed:`, fbErr.message);
-          }
-        }
-
-        // Try Tier 3: Mistral Stream
-        if (!streamSuccess && configState.hasMistralKey) {
+        // Provider Fallback to Mistral (Before Stream Begins)
+        if (configState.hasMistralKey) {
           try {
             console.log(`[CHAT ${reqId}] PROVIDER STREAM FALLBACK: Gemini → Mistral (${MISTRAL_LLM_MODEL})`);
             await attemptMistralStream();
             streamSuccess = true;
             activeProvider = "Mistral (" + MISTRAL_LLM_MODEL + ")";
           } catch (mErr) {
-            console.error(`[CHAT ${reqId} ERROR] Mistral stream fallback failed:`, mErr.message);
+            console.error(`[CHAT ${reqId} ERROR] Mistral stream fallback failed (HTTP ${mErr.status || 500}):`, mErr.message);
           }
         }
       }
@@ -466,7 +501,7 @@ ${retrievedContextStr}`;
       }
 
     } else {
-      // Non-Streaming Fallback Path
+      // Non-Streaming Path
       console.log(`[CHAT ${reqId}] Non-streaming request processing...`);
       let finalAnswerText = null;
       let usedProvider = "Gemini (" + PRIMARY_GEMINI_MODEL + ")";
@@ -484,7 +519,7 @@ ${retrievedContextStr}`;
         promptMessages.push({ role: "user", parts: [{ text: userQuery }] });
 
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        const timeoutId = setTimeout(() => controller.abort(), 6000);
 
         try {
           const res = await fetch(
@@ -516,13 +551,25 @@ ${retrievedContextStr}`;
       try {
         finalAnswerText = await callGeminiModel(PRIMARY_GEMINI_MODEL);
       } catch (err) {
-        const fallbackModels = FALLBACK_GEMINI_MODELS.filter((m) => m !== PRIMARY_GEMINI_MODEL);
-        for (const fbModel of fallbackModels) {
+        if (configState.hasMistralKey) {
           try {
-            finalAnswerText = await callGeminiModel(fbModel);
-            usedProvider = "Gemini (" + fbModel + ")";
-            break;
-          } catch (fbErr) {}
+            console.log(`[CHAT ${reqId}] Non-stream fallback to Mistral...`);
+            const messages = [{ role: "system", content: systemPrompt }];
+            recentHistory.forEach((turn) => {
+              messages.push({ role: turn.role === "user" ? "user" : "assistant", content: turn.content });
+            });
+            messages.push({ role: "user", content: userQuery });
+            const mRes = await fetch("https://api.mistral.ai/v1/chat/completions", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${MISTRAL_API_KEY}` },
+              body: JSON.stringify({ model: MISTRAL_LLM_MODEL, messages: messages, temperature: 0.3, max_tokens: 600 })
+            });
+            if (mRes.ok) {
+              const mData = await mRes.json();
+              finalAnswerText = mData?.choices?.[0]?.message?.content;
+              usedProvider = "Mistral (" + MISTRAL_LLM_MODEL + ")";
+            }
+          } catch (mErr) {}
         }
       }
 
