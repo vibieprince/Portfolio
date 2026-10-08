@@ -266,7 +266,7 @@ ${retrievedContextStr}`;
     let finalAnswerText = null;
     let usedProvider = "Gemini (" + PRIMARY_GEMINI_MODEL + ")";
 
-    // Helper: Call specific Gemini LLM model with safe diagnostic logging & defensive payload parsing
+    // Helper: Call specific Gemini LLM model with safe diagnostic logging & 5s timeout guard
     async function callGeminiModel(modelName) {
       console.log(`[CHAT ${reqId}] Attempting Gemini model: ${modelName}`);
       const promptMessages = [];
@@ -282,66 +282,82 @@ ${retrievedContextStr}`;
 
       promptMessages.push({ role: "user", parts: [{ text: userQuery }] });
 
-      const res = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            contents: promptMessages,
-            generationConfig: { temperature: 0.3, maxOutputTokens: 600 }
-          })
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout guard
+
+      try {
+        const res = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${GEMINI_API_KEY}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contents: promptMessages,
+              generationConfig: { temperature: 0.3, maxOutputTokens: 600 }
+            }),
+            signal: controller.signal
+          }
+        );
+        clearTimeout(timeoutId);
+
+        console.log(`[CHAT ${reqId}] Gemini (${modelName}) HTTP status: ${res.status}`);
+
+        if (!res.ok) {
+          const errText = await res.text();
+          let errCode = res.status;
+          let errMsg = errText;
+          try {
+            const parsed = JSON.parse(errText);
+            errCode = parsed?.error?.code || res.status;
+            errMsg = parsed?.error?.message || errText;
+          } catch (e) {}
+
+          console.warn(`[CHAT ${reqId} WARN] Gemini model ${modelName} returned HTTP ${res.status}:`, {
+            code: errCode,
+            message: errMsg ? errMsg.slice(0, 150) : ""
+          });
+
+          const error = new Error(`Gemini LLM (${modelName}) returned HTTP ${res.status}`);
+          error.status = res.status;
+          error.code = errCode;
+          throw error;
         }
-      );
 
-      console.log(`[CHAT ${reqId}] Gemini (${modelName}) HTTP status: ${res.status}`);
+        const data = await res.json();
+        
+        // Safe Diagnostic Metadata Logging
+        const candidates = data?.candidates || [];
+        const firstCandidate = candidates[0] || {};
+        const finishReason = firstCandidate.finishReason || "UNKNOWN";
+        const parts = firstCandidate.content?.parts || [];
+        const text = parts[0]?.text || "";
 
-      if (!res.ok) {
-        const errText = await res.text();
-        let errCode = res.status;
-        let errMsg = errText;
-        try {
-          const parsed = JSON.parse(errText);
-          errCode = parsed?.error?.code || res.status;
-          errMsg = parsed?.error?.message || errText;
-        } catch (e) {}
-
-        console.warn(`[CHAT ${reqId} WARN] Gemini model ${modelName} returned HTTP ${res.status}:`, {
-          code: errCode,
-          message: errMsg ? errMsg.slice(0, 150) : ""
+        console.log(`[CHAT ${reqId}] Gemini (${modelName}) response metadata:`, {
+          candidatesCount: candidates.length,
+          finishReason: finishReason,
+          partsCount: parts.length,
+          textLength: text.length
         });
 
-        const error = new Error(`Gemini LLM (${modelName}) returned HTTP ${res.status}`);
-        error.status = res.status;
-        error.code = errCode;
-        throw error;
+        // Defensive Parsing Check
+        if (!candidates.length || !parts.length || !text.trim()) {
+          console.warn(`[CHAT ${reqId} WARN] Gemini model ${modelName} returned 200 OK but candidate/text content was empty or blocked (finishReason: ${finishReason}).`);
+          const error = new Error(`Gemini LLM (${modelName}) returned empty text content (finishReason: ${finishReason})`);
+          error.status = 502;
+          throw error;
+        }
+
+        return text.trim();
+      } catch (err) {
+        clearTimeout(timeoutId);
+        if (err.name === "AbortError") {
+          console.warn(`[CHAT ${reqId} WARN] Gemini model ${modelName} timed out (>5000ms)`);
+          const timeoutErr = new Error(`Gemini model ${modelName} timed out`);
+          timeoutErr.status = 504;
+          throw timeoutErr;
+        }
+        throw err;
       }
-
-      const data = await res.json();
-      
-      // Safe Diagnostic Metadata Logging
-      const candidates = data?.candidates || [];
-      const firstCandidate = candidates[0] || {};
-      const finishReason = firstCandidate.finishReason || "UNKNOWN";
-      const parts = firstCandidate.content?.parts || [];
-      const text = parts[0]?.text || "";
-
-      console.log(`[CHAT ${reqId}] Gemini (${modelName}) response metadata:`, {
-        candidatesCount: candidates.length,
-        finishReason: finishReason,
-        partsCount: parts.length,
-        textLength: text.length
-      });
-
-      // Defensive Parsing Check
-      if (!candidates.length || !parts.length || !text.trim()) {
-        console.warn(`[CHAT ${reqId} WARN] Gemini model ${modelName} returned 200 OK but candidate/text content was empty or blocked (finishReason: ${finishReason}).`);
-        const error = new Error(`Gemini LLM (${modelName}) returned empty text content (finishReason: ${finishReason})`);
-        error.status = 502;
-        throw error;
-      }
-
-      return text.trim();
     }
 
     // Helper: Call Mistral LLM
