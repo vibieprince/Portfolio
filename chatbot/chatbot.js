@@ -1,6 +1,6 @@
 /**
  * Prince Portfolio AI Assistant — chatbot.js
- * PDF-grounded RAG chatbot with session memory.
+ * PDF-grounded RAG chatbot with progressive SSE token streaming and session memory.
  * Talks to /api/chat (server-side Gemini → Mistral fallback).
  * State stored in sessionStorage only — no persistent visitor tracking.
  */
@@ -18,9 +18,9 @@
     SUGGESTIONS: [
       'Tell me about Prince',
       'Education & CGPA',
-      'Projects',
+      'Projects & Architecture',
       'Skills & Tech Stack',
-      'Achievements',
+      'Achievements & Hackathons',
       'Certifications',
     ],
     STORAGE_KEY: 'prince_chat_history',
@@ -74,7 +74,7 @@
     </div>
     <div id="chat-header-info">
       <div id="chat-header-title">Prince's AI Assistant</div>
-      <div id="chat-header-subtitle">PDF Knowledge Base · Always Available</div>
+      <div id="chat-header-subtitle">Recruiter & Portfolio Assistant · Live</div>
     </div>
     <div class="chat-header-actions">
       <button class="chat-icon-btn" id="chat-clear-btn" aria-label="Clear conversation" title="Clear conversation">
@@ -154,23 +154,17 @@
       .replace(/'/g, '&#39;');
   }
 
-  /** Convert plain text with newlines to HTML, preserving links */
+  /** Convert text with markdown to safe HTML */
   function formatMessageText(text) {
-    // Escape HTML first
     let safe = escapeHTML(text);
-    // Convert **bold** markdown
     safe = safe.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-    // Convert *italic* markdown
     safe = safe.replace(/\*(.*?)\*/g, '<em>$1</em>');
-    // Convert URLs to clickable links
     safe = safe.replace(
       /(https?:\/\/[^\s<>"]+)/g,
       '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>'
     );
-    // Convert numbered/bulleted list items
     safe = safe.replace(/^(\d+\.\s)/gm, '<span style="font-weight:600">$1</span>');
     safe = safe.replace(/^([•\-\*]\s)/gm, '<span aria-hidden="true">• </span>');
-    // Newlines to <br>
     safe = safe.replace(/\n/g, '<br>');
     return safe;
   }
@@ -189,7 +183,6 @@
     const region = $('chat-live-region');
     if (region) {
       region.textContent = '';
-      // Force re-announcement via timeout trick
       setTimeout(() => { region.textContent = text; }, 50);
     }
   }
@@ -211,7 +204,7 @@
   function saveHistory(history) {
     try {
       sessionStorage.setItem(CONFIG.STORAGE_KEY, JSON.stringify(history));
-    } catch (e) { /* ignore quota errors silently */ }
+    } catch (e) { /* ignore */ }
   }
 
   function clearHistory() {
@@ -252,30 +245,43 @@
     return div;
   }
 
-  function appendBotMessage(text, sources) {
+  function createStreamingBotMessage() {
     const msgs = $('chat-messages');
     const div = document.createElement('div');
     div.className = 'chat-msg chat-msg-bot';
     div.setAttribute('role', 'article');
     div.setAttribute('aria-label', 'Assistant response');
 
-    let sourcesHTML = '';
-    if (sources && sources.length > 0) {
-      const tags = sources.slice(0, 3).map(s =>
-        `<span class="chat-source-tag">📄 ${escapeHTML(s.section || s.title || 'PDF')} · p.${s.page || '?'}</span>`
-      ).join('');
-      sourcesHTML = `<div class="chat-sources">${tags}</div>`;
-    }
-
     div.innerHTML = `
-      <div class="chat-bubble chat-bubble-bot">${formatMessageText(text)}</div>
-      ${sourcesHTML}
+      <div class="chat-bubble chat-bubble-bot"></div>
+      <div class="chat-sources" style="display:none"></div>
       <div class="chat-msg-time" aria-label="Received at ${formatTime()}">${formatTime()}</div>
     `;
     msgs.appendChild(div);
     scrollToBottom();
+    return {
+      container: div,
+      bubble: div.querySelector('.chat-bubble'),
+      sourcesContainer: div.querySelector('.chat-sources')
+    };
+  }
+
+  function updateBotMessageSources(sourcesContainer, sources) {
+    if (!sourcesContainer || !sources || sources.length === 0) return;
+    const tags = sources.slice(0, 3).map(s =>
+      `<span class="chat-source-tag">📄 ${escapeHTML(s.section || s.title || 'PDF')} · p.${s.page || '?'}</span>`
+    ).join('');
+    sourcesContainer.innerHTML = tags;
+    sourcesContainer.style.display = 'flex';
+  }
+
+  function appendBotMessage(text, sources) {
+    const botMsg = createStreamingBotMessage();
+    botMsg.bubble.innerHTML = formatMessageText(text);
+    updateBotMessageSources(botMsg.sourcesContainer, sources);
+    scrollToBottom();
     announceToScreenReader(text.slice(0, 200));
-    return div;
+    return botMsg.container;
   }
 
   function appendErrorMessage(retryText) {
@@ -295,7 +301,6 @@
     `;
     msgs.appendChild(div);
 
-    // Bind retry button
     const retryBtn = div.querySelector('.chat-retry-btn');
     if (retryBtn) {
       retryBtn.addEventListener('click', () => {
@@ -326,55 +331,89 @@
   }
 
   /* ============================================================
-     API CALL
+     SSE STREAMING & CHAT API CALL
   ============================================================ */
-  async function callChatAPI(message, history) {
+  async function sendMessageStream(message, history, onChunk, onDone, onError) {
     const payload = {
       message: message,
       conversation: history.slice(-CONFIG.MAX_HISTORY),
+      stream: true
     };
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 30000);
+    const timeout = setTimeout(() => controller.abort(), 40000);
 
     try {
       const res = await fetch(CONFIG.API_ENDPOINT, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'text/event-stream'
+        },
         body: JSON.stringify(payload),
-        signal: controller.signal,
+        signal: controller.signal
       });
 
       clearTimeout(timeout);
 
-      if (res.status === 429) {
-        throw new Error('rate_limit');
-      }
       if (!res.ok) {
-        throw new Error(`api_error_${res.status}`);
+        let errJson = {};
+        try { errJson = await res.json(); } catch (e) {}
+        throw new Error(errJson.error || `HTTP_${res.status}`);
       }
 
-      const data = await res.json();
-      return {
-        answer: data.answer || data.reply || data.response || 'No response received.',
-        sources: data.sources || [],
-      };
+      // Check if response is SSE stream
+      const contentType = res.headers.get('content-type') || '';
+      if (contentType.includes('text/event-stream')) {
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder('utf-8');
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          buffer += decoder.decode(value, { stream: true });
+
+          const lines = buffer.split('\n');
+          buffer = lines.pop() || '';
+
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (trimmed.startsWith('data: ')) {
+              const jsonStr = trimmed.substring(6).trim();
+              try {
+                const parsed = JSON.parse(jsonStr);
+                if (line.startsWith('event: token') || parsed.text) {
+                  onChunk(parsed.text || '');
+                } else if (line.startsWith('event: done') || parsed.sources) {
+                  onDone(parsed);
+                } else if (line.startsWith('event: error')) {
+                  throw new Error(parsed.error || 'stream_error');
+                }
+              } catch (e) {}
+            }
+          }
+        }
+      } else {
+        // Fallback to standard JSON response
+        const data = await res.json();
+        onChunk(data.answer || 'No response.');
+        onDone({ sources: data.sources || [] });
+      }
     } catch (err) {
       clearTimeout(timeout);
-      if (err.name === 'AbortError') throw new Error('timeout');
-      throw err;
+      onError(err);
     }
   }
 
   /* ============================================================
-     SEND MESSAGE
+     SEND MESSAGE HANDLER
   ============================================================ */
   async function sendMessage(text, isRetry = false) {
     if (isLoading) return;
     const trimmed = text.trim();
     if (!trimmed) return;
 
-    // Hide suggestions after first message
     if (!suggestionsHidden) {
       const suggestions = $('chat-suggestions');
       if (suggestions) {
@@ -386,51 +425,75 @@
     isLoading = true;
     lastFailedMessage = trimmed;
 
-    // Disable input while loading
     const input = $('chat-input');
     const sendBtn = $('chat-send-btn');
     if (input) { input.value = ''; input.style.height = 'auto'; input.disabled = true; }
     if (sendBtn) sendBtn.disabled = true;
 
-    // Render user message
     appendUserMessage(trimmed);
-
-    // Show typing indicator
     showTyping();
 
-    // Add to history optimistically
     conversationHistory.push({ role: 'user', content: trimmed });
 
-    try {
-      const result = await callChatAPI(trimmed, conversationHistory.slice(0, -1));
-      hideTyping();
+    let botMsgObj = null;
+    let accumulatedText = '';
 
-      conversationHistory.push({ role: 'assistant', content: result.answer });
-      // Trim to bounded history
-      if (conversationHistory.length > CONFIG.MAX_HISTORY * 2) {
-        conversationHistory = conversationHistory.slice(-CONFIG.MAX_HISTORY * 2);
+    await sendMessageStream(
+      trimmed,
+      conversationHistory.slice(0, -1),
+      // On Chunk: Stream token to UI
+      (tokenText) => {
+        hideTyping();
+        if (!botMsgObj) {
+          botMsgObj = createStreamingBotMessage();
+        }
+        accumulatedText += tokenText;
+        botMsgObj.bubble.innerHTML = formatMessageText(accumulatedText);
+        scrollToBottom();
+      },
+      // On Done: Finalize sources & save history
+      (donePayload) => {
+        hideTyping();
+        if (!botMsgObj && accumulatedText) {
+          botMsgObj = createStreamingBotMessage();
+          botMsgObj.bubble.innerHTML = formatMessageText(accumulatedText);
+        }
+        if (botMsgObj && donePayload.sources) {
+          updateBotMessageSources(botMsgObj.sourcesContainer, donePayload.sources);
+        }
+        if (accumulatedText) {
+          conversationHistory.push({ role: 'assistant', content: accumulatedText });
+          if (conversationHistory.length > CONFIG.MAX_HISTORY * 2) {
+            conversationHistory = conversationHistory.slice(-CONFIG.MAX_HISTORY * 2);
+          }
+          saveHistory(conversationHistory);
+        }
+        lastFailedMessage = null;
+        isLoading = false;
+        if (input) { input.disabled = false; input.focus(); }
+        if (sendBtn) { updateSendButton(); }
+      },
+      // On Error: Handle error & retry
+      (err) => {
+        hideTyping();
+        if (conversationHistory.length > 0 && conversationHistory[conversationHistory.length - 1].role === 'user') {
+          conversationHistory.pop();
+        }
+        if (!accumulatedText) {
+          appendErrorMessage(trimmed);
+        } else {
+          // If stream failed mid-way
+          botMsgObj.bubble.innerHTML += '<br><em class="text-secondary">[Generation interrupted. Tap retry to try again.]</em>';
+        }
+        isLoading = false;
+        if (input) { input.disabled = false; input.focus(); }
+        if (sendBtn) { updateSendButton(); }
       }
-      saveHistory(conversationHistory);
-
-      appendBotMessage(result.answer, result.sources);
-      lastFailedMessage = null;
-
-    } catch (err) {
-      hideTyping();
-      // Remove the optimistic user message from history since we didn't get a response
-      if (conversationHistory.length > 0 && conversationHistory[conversationHistory.length - 1].role === 'user') {
-        conversationHistory.pop();
-      }
-      appendErrorMessage(trimmed);
-    } finally {
-      isLoading = false;
-      if (input) { input.disabled = false; input.focus(); }
-      if (sendBtn) { updateSendButton(); }
-    }
+    );
   }
 
   /* ============================================================
-     AUTO-RESIZE TEXTAREA
+     AUTO-RESIZE TEXTAREA & UI HELPERS
   ============================================================ */
   function autoResizeTextarea(el) {
     el.style.height = 'auto';
@@ -446,9 +509,6 @@
     sendBtn.disabled = input.value.trim().length === 0 || isLoading;
   }
 
-  /* ============================================================
-     OPEN / CLOSE
-  ============================================================ */
   function openChat() {
     isOpen = true;
     const panel = $('chat-panel');
@@ -456,11 +516,9 @@
     if (panel) panel.classList.add('chat-open');
     if (launcher) launcher.setAttribute('aria-expanded', 'true');
 
-    // Load persisted session history
     const saved = loadHistory();
     if (saved.length > 0) {
       conversationHistory = saved;
-      // Re-render saved messages (without welcome)
       const msgs = $('chat-messages');
       if (msgs) {
         msgs.innerHTML = '';
@@ -471,7 +529,6 @@
             appendBotMessage(msg.content, []);
           }
         });
-        // Hide suggestions if there's prior history
         const suggestions = $('chat-suggestions');
         if (suggestions) { suggestions.style.display = 'none'; suggestionsHidden = true; }
       }
@@ -480,14 +537,11 @@
     }
 
     scrollToBottom(false);
-
-    // Focus input
     setTimeout(() => {
       const input = $('chat-input');
       if (input) input.focus();
     }, 100);
 
-    // Trap Escape to close
     document.addEventListener('keydown', handleEscape);
   }
 
@@ -498,7 +552,7 @@
     if (panel) panel.classList.remove('chat-open');
     if (launcher) {
       launcher.setAttribute('aria-expanded', 'false');
-      launcher.focus(); // return focus to launcher on close
+      launcher.focus();
     }
     document.removeEventListener('keydown', handleEscape);
   }
@@ -521,48 +575,32 @@
   }
 
   /* ============================================================
-     INITIALIZATION
+     INITIALIZATION & ENTRY
   ============================================================ */
   function init() {
-    if (document.getElementById('chat-launcher')) return; // Guard against duplicate init
+    if (document.getElementById('chat-launcher')) return;
 
-    // Inject HTML into body
     const container = document.createElement('div');
     container.innerHTML = buildChatbotHTML();
     while (container.firstChild) {
       document.body.appendChild(container.firstChild);
     }
 
-    // Bind launcher
     const launcher = $('chat-launcher');
-    if (launcher) {
-      launcher.addEventListener('click', () => {
-        if (isOpen) closeChat(); else openChat();
-      });
-    }
+    if (launcher) launcher.addEventListener('click', () => { if (isOpen) closeChat(); else openChat(); });
 
-    // Bind close
     const closeBtn = $('chat-close-btn');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', closeChat);
-    }
+    if (closeBtn) closeBtn.addEventListener('click', closeChat);
 
-    // Bind clear
     const clearBtn = $('chat-clear-btn');
-    if (clearBtn) {
-      clearBtn.addEventListener('click', clearChat);
-    }
+    if (clearBtn) clearBtn.addEventListener('click', clearChat);
 
-    // Bind send button
     const sendBtn = $('chat-send-btn');
-    if (sendBtn) {
-      sendBtn.addEventListener('click', () => {
-        const input = $('chat-input');
-        if (input) sendMessage(input.value);
-      });
-    }
+    if (sendBtn) sendBtn.addEventListener('click', () => {
+      const input = $('chat-input');
+      if (input) sendMessage(input.value);
+    });
 
-    // Bind textarea input
     const input = $('chat-input');
     if (input) {
       input.addEventListener('input', () => {
@@ -578,21 +616,15 @@
       });
     }
 
-    // Bind suggestion chips
     const suggestions = $('chat-suggestions');
     if (suggestions) {
       suggestions.addEventListener('click', (e) => {
         const chip = e.target.closest('.chat-chip');
-        if (chip) {
-          sendMessage(chip.textContent);
-        }
+        if (chip) sendMessage(chip.textContent);
       });
     }
   }
 
-  /* ============================================================
-     ENTRY POINT
-  ============================================================ */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
